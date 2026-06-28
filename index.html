@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MediTwin AI — Personal Health Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
+:root{
+  --sage:   #52a882;
+  --sage2:  #3a8a6a;
+  --slt:    #edf7f2;
+  --blue:   #4a90d9;
+  --blt:    #eaf3fc;
+  --vio:    #7c6fc4;
+  --vlt:    #f0edfb;
+  --rose:   #e05a6e;
+  --rlt:    #fff0f2;
+  --amb:    #d97706;
+  --alt:    #fffbeb;
+  --grn:    #38a169;
+  --glt:    #f0fff4;
+  --sky:    #38b2ac;
+ 
+  --bg:     #f4f7fb;
+  --bg2:    #eaeff6;
+  --card:   #ffffff;
+  --bdr:    #e2e8f0;
+  --bdr2:   #c8d5e4;
+  --t1:     #1a202c;
+  --t2:     #4a5568;
+  --t3:     #718096;
+  --t4:     #a0aec0;
+ 
+  --g1: linear-gradient(135deg,#52a882,#4a90d9);
+  --g2: linear-gradient(135deg,#38a169,#38b2ac);
+  --g3: linear-gradient(135deg,#7c6fc4,#4a90d9);
+ 
+  --sh0: 0 1px 3px rgba(0,0,0,.05);
+  --sh1: 0 2px 8px rgba(0,0,0,.07);
+  --sh2: 0 6px 24px rgba(0,0,0,.09);
+  --sh3: 0 16px 48px rgba(0,0,0,.11);
+  --glow: 0 0 0 3px rgba(82,168,130,.2);
+ 
+  --r0:6px; --r1:10px; --r2:16px; --r3:22px; --r4:30px; --rf:999px;
+  --ease: cubic-bezier(.16,1,.3,1);
+  --spring: cubic-bezier(.34,1.56,.64,1);
+}
+[data-theme=dark]{
+  --bg:#0f1623; --bg2:#151e2e; --card:#1a2438; --bdr:rgba(255,255,255,.07);
+  --bdr2:rgba(255,255,255,.13); --t1:#e8f0fc; --t2:#8090aa; --t3:#506070; --t4:#344055;
+  --slt:rgba(82,168,130,.11); --blt:rgba(74,144,217,.11); --vlt:rgba(124,111,196,.11);
+  --rlt:rgba(224,90,110,.11); --alt:rgba(217,119,6,.11); --glt:rgba(56,161,105,.11);
+  --sh0:0 1px 3px rgba(0,0,0,.3); --sh1:0 2px 8px rgba(0,0,0,.4);
+  --sh2:0 6px 24px rgba(0,0,0,.5); --sh3:0 16px 48px rgba(0,0,0,.6);
+}
+ 
+/* ─────────────────────────────────────────
+   RESET
+───────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;
+  -webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+input,select,textarea{font-family:inherit;color:var(--t1)}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+.hidden{display:none!important}
+ 
+/* ─────────────────────────────────────────
+   WELCOME SCREEN
+───────────────────────────────────────── */
+#welcome{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:5rem 2rem 2rem;position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at 15% 50%,rgba(82,168,130,.18) 0,transparent 55%),
+             radial-gradient(ellipse at 85% 20%,rgba(74,144,217,.14) 0,transparent 50%),
+             radial-gradient(ellipse at 55% 85%,rgba(124,111,196,.10) 0,transparent 45%);
+}
+.wlc-bar{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  height:60px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;
+  background:rgba(255,255,255,.85);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--bdr);
+}
+[data-theme=dark] .wlc-bar{background:rgba(15,22,35,.85)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{
+  width:36px;height:36px;border-radius:11px;background:var(--g1);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+  box-shadow:0 4px 12px rgba(82,168,130,.35);
+}
+.brand-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;color:var(--t1)}
+.brand-name span{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+ 
+.wlc-center{
+  position:relative;z-index:1;max-width:640px;width:100%;
+  animation:fadeUp .8s var(--ease) both;
+}
+.wlc-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:6px 16px;border-radius:var(--rf);
+  background:rgba(82,168,130,.1);border:1px solid rgba(82,168,130,.25);
+  color:var(--sage2);font-size:.72rem;font-weight:700;
+  letter-spacing:1.3px;text-transform:uppercase;margin-bottom:1.8rem;
+}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);animation:badgePulse 2s infinite}
+.wlc-h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.6rem,5.5vw,3.9rem);
+  font-weight:700;color:var(--t1);
+  line-height:1.08;letter-spacing:-.4px;margin-bottom:1.2rem;
+}
+.wlc-h1 .hl{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.wlc-sub{font-size:1.04rem;color:var(--t2);line-height:1.75;margin-bottom:2.2rem;max-width:500px}
+.wlc-feats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;margin-bottom:2.5rem;
+}
+.wfeat{
+  background:color-mix(in srgb,var(--card) 88%,transparent);border:1px solid var(--bdr);
+  border-radius:var(--r2);padding:1.1rem;
+  box-shadow:var(--sh0);transition:all .2s var(--ease);
+  backdrop-filter:blur(8px);
+}
+.wfeat:hover{box-shadow:var(--sh1);transform:translateY(-2px)}
+.wfeat-icon{font-size:1.4rem;margin-bottom:6px}
+.wfeat-title{font-size:.8rem;font-weight:700;color:var(--t1);margin-bottom:2px}
+.wfeat-desc{font-size:.71rem;color:var(--t3);line-height:1.4}
+.wlc-cta{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:1rem 2.6rem;border-radius:var(--rf);
+  background:var(--g1);color:#fff;font-size:1rem;font-weight:700;
+  box-shadow:0 8px 28px rgba(82,168,130,.4);
+  transition:transform .25s var(--spring),box-shadow .25s;
+  margin-bottom:.9rem;
+}
+.wlc-cta:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 12px 36px rgba(82,168,130,.5)}
+.wlc-note{font-size:.72rem;color:var(--t4);display:block}
+ 
+/* ─────────────────────────────────────────
+   SETUP
+───────────────────────────────────────── */
+#setup{
+  min-height:100vh;display:none;align-items:center;justify-content:center;
+  padding:2rem;
+  background:radial-gradient(ellipse at 30% 40%,rgba(82,168,130,.09) 0,transparent 55%),var(--bg);
+}
+#setup.show{display:flex}
+.setup-box{
+  background:var(--card);border-radius:var(--r4);
+  box-shadow:var(--sh3);width:100%;max-width:700px;overflow:hidden;
+  animation:fadeUp .45s var(--ease) both;
+}
+.setup-bar{height:4px;background:var(--bg2)}
+.setup-bar-fill{height:100%;background:var(--g1);transition:width .5s var(--ease);width:33%}
+.setup-inner{padding:2.4rem 2.5rem}
+.step{display:none}
+.step.on{display:block;animation:fadeUp .35s var(--ease) both}
+.step-lbl{font-size:.69rem;font-weight:700;color:var(--sage2);text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem}
+.step h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:600;color:var(--t1);margin-bottom:.3rem}
+.step > p{font-size:.88rem;color:var(--t2);margin-bottom:1.6rem}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.4rem}
+.fgrid.one{grid-template-columns:1fr}
+.field{
+  background:var(--bg2);border:1.5px solid var(--bdr);
+  border-radius:var(--r2);padding:1rem 1.1rem;
+  transition:border-color .2s,box-shadow .2s;
+}
+.field:focus-within{border-color:var(--sage);box-shadow:var(--glow)}
+.field label{display:block;font-size:.67rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.field-row{display:flex;align-items:center;gap:9px}
+input[type=range]{
+  flex:1;-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;
+  background:var(--bdr);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:19px;height:19px;border-radius:50%;
+  background:var(--g1);box-shadow:0 2px 8px rgba(82,168,130,.45);cursor:pointer;
+  transition:transform .15s var(--spring);
+}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+input[type=range]::-moz-range-thumb{width:19px;height:19px;border-radius:50%;background:var(--g1);border:none}
+.rv{font-size:.84rem;font-weight:700;color:var(--blue);min-width:74px;text-align:right}
+.fsel{
+  width:100%;padding:8px 28px 8px 10px;background:transparent;border:none;
+  font-size:.86rem;font-weight:500;outline:none;cursor:pointer;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 5 4.5-5' stroke='%23718096' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+}
+.fsel option{background:var(--card)}
+.pills{display:flex;flex-wrap:wrap;gap:7px;padding-top:4px}
+.pill{
+  padding:6px 13px;border-radius:var(--rf);font-size:.77rem;font-weight:500;
+  background:var(--bg);border:1.5px solid var(--bdr);color:var(--t2);
+  cursor:pointer;transition:all .18s;
+}
+.pill:hover{border-color:var(--bdr2);color:var(--t1)}
+.pill.on{background:var(--slt);border-color:var(--sage);color:var(--sage2);font-weight:600}
+.step-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:1.4rem;padding-top:1.4rem;border-top:1px solid var(--bdr);
+}
+.dots{display:flex;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--bdr2);transition:all .25s}
+.dot.on{background:var(--sage);width:22px;border-radius:4px}
+ 
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:.68rem 1.5rem;
+  border-radius:var(--rf);font-size:.87rem;font-weight:600;font-family:'Inter',sans-serif;
+  transition:all .22s var(--ease);white-space:nowrap;
+}
+.btn-p{background:var(--g1);color:#fff;box-shadow:0 3px 14px rgba(82,168,130,.35)}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(82,168,130,.45)}
+.btn-p:active{transform:translateY(0)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-s{background:var(--card);border:1.5px solid var(--bdr);color:var(--t2);box-shadow:var(--sh0)}
+.btn-s:hover{border-color:var(--bdr2);color:var(--t1);box-shadow:var(--sh1)}
+.btn-sm{padding:.46rem 1rem;font-size:.78rem}
+.btn-icon{
+  width:34px;height:34px;padding:0;border-radius:var(--r1);
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  background:var(--card);border:1px solid var(--bdr);color:var(--t3);
+  box-shadow:var(--sh0);transition:all .2s;
+}
+.btn-icon:hover{border-color:var(--bdr2);color:var(--t1)}
+.btn-icon.lit{background:var(--slt);border-color:var(--sage);color:var(--sage2)}
+ 
+/* ─────────────────────────────────────────
+   APP SHELL
+───────────────────────────────────────── */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.show{display:flex}
+ 
+/* TOP NAV */
+.topnav{
+  position:sticky;top:0;z-index:100;
+  height:62px;display:flex;align-items:center;gap:4px;
+  padding:0 1.5rem;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bdr);box-shadow:var(--sh0);
+  transition:background .3s;
+}
+[data-theme=dark] .topnav{background:rgba(15,22,35,.9)}
+.nav-brand{display:flex;align-items:center;gap:9px;margin-right:1.2rem;flex-shrink:0}
+.nav-brand-icon{width:32px;height:32px;border-radius:9px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.nav-brand-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--t1)}
+.nav-brand-name span{background:var(--g1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-tabs{display:flex;gap:2px;flex:1;overflow-x:auto}
+.nav-tabs::-webkit-scrollbar{display:none}
+.tab{
+  display:flex;align-items:center;gap:6px;
+  padding:.48rem 1.1rem;border-radius:var(--rf);
+  font-size:.8rem;font-weight:500;color:var(--t3);
+  cursor:pointer;transition:all .18s;white-space:nowrap;border:none;background:none;
+}
+.tab:hover{background:var(--bg2);color:var(--t1)}
+.tab.on{background:var(--slt);color:var(--sage2);font-weight:600}
+.tab-icon{font-size:.95rem}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.score-chip{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 12px;border-radius:var(--rf);
+  background:var(--slt);border:1px solid rgba(82,168,130,.25);
+}
+.sc-lbl{font-size:.65rem;font-weight:700;color:var(--sage2);text-transform:uppercase;letter-spacing:.5px}
+.sc-val{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;line-height:1}
+.sc-grade{font-size:.68rem;font-weight:600}
+ 
+/* ─────────────────────────────────────────
+   PAGES
+───────────────────────────────────────── */
+.body{flex:1;padding:1.8rem;max-width:1080px;width:100%;margin:0 auto}
+.page{display:none;animation:fadeUp .38s var(--ease) both}
+.page.on{display:block}
+.pg-head{margin-bottom:1.5rem}
+.pg-title{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:600;color:var(--t1);margin-bottom:.22rem}
+.pg-sub{font-size:.87rem;color:var(--t2)}
+ 
+/* ─────────────────────────────────────────
+   DASHBOARD HERO
+───────────────────────────────────────── */
+.hero-card{
+  background:linear-gradient(145deg,rgba(82,168,130,.07) 0%,rgba(74,144,217,.07) 55%,rgba(124,111,196,.05) 100%);
+  border:1px solid var(--bdr);border-radius:var(--r4);
+  padding:2rem 2.2rem;margin-bottom:1.4rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1.5rem;
+  position:relative;overflow:hidden;box-shadow:var(--sh2);
+}
+.hero-card::before{
+  content:'';position:absolute;top:-50px;right:-50px;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(82,168,130,.08) 0,transparent 70%);pointer-events:none;
+}
+.hero-left{position:relative;z-index:1;flex:1;min-width:0}
+.hero-greet{font-size:.7rem;font-weight:700;color:var(--sage2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:.35rem}
+.hero-title{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--t1);margin-bottom:.5rem;line-height:1.2}
+.hero-msg{font-size:.87rem;color:var(--t2);line-height:1.65;max-width:420px;margin-bottom:.9rem}
+.hero-tags{display:flex;flex-wrap:wrap;gap:5px}
+.htag{padding:3px 10px;border-radius:var(--rf);font-size:.69rem;font-weight:600}
+.htag-g{background:var(--glt);color:var(--grn);border:1px solid rgba(56,161,105,.2)}
+.htag-a{background:var(--alt);color:var(--amb);border:1px solid rgba(217,119,6,.2)}
+.htag-r{background:var(--rlt);color:var(--rose);border:1px solid rgba(224,90,110,.2)}
+.htag-b{background:var(--blt);color:var(--blue);border:1px solid rgba(74,144,217,.2)}
+.hero-right{display:flex;align-items:center;gap:1.4rem;position:relative;z-index:1;flex-shrink:0}
+ 
+/* Avatar */
+.avatar-wrap{position:relative;width:86px;height:86px}
+.av-ring{position:absolute;inset:-6px;border-radius:50%;border:1.5px solid rgba(82,168,130,.28);animation:ringPulse 2.6s ease-out infinite}
+.av-ring2{inset:-13px;animation-delay:.9s;opacity:.6}
+.av-face{
+  width:86px;height:86px;border-radius:50%;
+  background:linear-gradient(135deg,#c8e5d8,#bdd5ea);
+  border:2px solid rgba(82,168,130,.22);
+  display:flex;align-items:center;justify-content:center;font-size:2.2rem;
+  position:relative;z-index:1;
+}
+ 
+/* Score ring */
+.score-ring{position:relative;width:106px;height:106px}
+.score-svg{width:106px;height:106px;transform:rotate(-90deg)}
+.sr-track{fill:none;stroke:rgba(82,168,130,.1);stroke-width:9}
+.sr-fill{fill:none;stroke-width:9;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;
+  transition:stroke-dashoffset 1.5s var(--ease),stroke .5s;filter:drop-shadow(0 0 5px rgba(82,168,130,.3))}
+.score-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.score-n{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--t1);line-height:1}
+.score-l{font-size:.55rem;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.score-g{font-size:.73rem;font-weight:700;text-align:center;margin-top:6px}
+ 
+/* ─────────────────────────────────────────
+   STAT CARDS
+───────────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:1.4rem}
+.stat{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);
+  padding:1.05rem 1.15rem;box-shadow:var(--sh0);
+  transition:all .2s var(--ease);position:relative;overflow:hidden;
+}
+.stat:hover{box-shadow:var(--sh1);transform:translateY(-2px)}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r2) var(--r2) 0 0}
+.stat.c-b::before{background:var(--blue)}
+.stat.c-a::before{background:var(--amb)}
+.stat.c-r::before{background:var(--rose)}
+.stat.c-g::before{background:var(--grn)}
+.stat-icon{font-size:1.1rem;margin-bottom:6px;margin-top:4px;display:block}
+.stat-lbl{font-size:.63rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.stat-val{font-size:1.02rem;font-weight:700;color:var(--t1);margin-bottom:1px}
+.stat-sub{font-size:.69rem;color:var(--t3);margin-bottom:8px}
+.stat-bar{height:3px;background:var(--bg2);border-radius:2px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:2px;width:0;transition:width 1.1s var(--ease)}
+ 
+/* ─────────────────────────────────────────
+   POSITIVITY STRIP
+───────────────────────────────────────── */
+.pos-strip{
+  display:flex;align-items:flex-start;gap:13px;
+  padding:1.1rem 1.4rem;
+  background:linear-gradient(135deg,var(--glt),rgba(82,168,130,.05));
+  border:1px solid rgba(82,168,130,.2);border-radius:var(--r2);
+  margin-bottom:1.4rem;box-shadow:var(--sh0);
+}
+.pos-icon{font-size:1.5rem;flex-shrink:0;margin-top:1px;animation:floatIcon 3s ease-in-out infinite}
+.pos-text{font-size:.87rem;color:var(--t1);line-height:1.65}
+.pos-text strong{color:var(--sage2)}
+ 
+/* ─────────────────────────────────────────
+   DASHBOARD GRID
+───────────────────────────────────────── */
+.dash-grid{display:grid;grid-template-columns:1fr 310px;gap:1.3rem}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);padding:1.35rem;box-shadow:var(--sh0)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.card-title{font-family:'Playfair Display',serif;font-size:.97rem;font-weight:600;color:var(--t1);display:flex;align-items:center;gap:7px}
+.badge{font-family:'Inter',sans-serif;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:var(--rf);background:var(--slt);color:var(--sage2);text-transform:uppercase}
+ 
+/* Risks */
+.risk-row{display:flex;align-items:center;gap:11px;padding:.72rem 0;border-bottom:1px solid var(--bdr)}
+.risk-row:last-child{border-bottom:none;padding-bottom:0}
+.risk-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.risk-body{flex:1;min-width:0}
+.risk-name{font-size:.83rem;font-weight:600;color:var(--t1);margin-bottom:3px}
+.risk-tip{font-size:.71rem;color:var(--t3);margin-bottom:5px;line-height:1.4}
+.risk-bar{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:2px;width:0;transition:width 1.2s var(--ease)}
+.risk-right{text-align:right;flex-shrink:0;min-width:50px}
+.risk-pct{font-size:.98rem;font-weight:700}
+.risk-lvl{font-size:.61rem;font-weight:700;text-transform:uppercase}
+ 
+/* Timeline */
+.tl-row{display:flex;gap:12px}
+.tl-spine{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:18px}
+.tl-dot{width:11px;height:11px;border-radius:50%;margin-top:3px}
+.tl-line{width:2px;background:var(--bdr);flex:1;min-height:12px;margin:3px 0}
+.tl-body{flex:1;padding-bottom:1rem}
+.tl-when{font-size:.64rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.tl-text{background:var(--bg2);border-radius:var(--r1);padding:8px 11px;font-size:.79rem;color:var(--t2);line-height:1.5}
+ 
+/* Quick actions */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qa{
+  padding:.9rem;border-radius:var(--r2);
+  background:var(--bg2);border:1.5px solid var(--bdr);
+  cursor:pointer;text-align:left;transition:all .2s var(--ease);
+}
+.qa:hover{background:var(--card);border-color:var(--sage);box-shadow:var(--sh1);transform:translateY(-2px)}
+.qa-icon{font-size:1.2rem;margin-bottom:4px;display:block}
+.qa-title{font-size:.77rem;font-weight:600;color:var(--t1);margin-bottom:1px}
+.qa-desc{font-size:.67rem;color:var(--t3)}
+ 
+/* AI summary */
+.ai-box{
+  padding:1.1rem 1.2rem;margin-top:1.3rem;
+  background:linear-gradient(135deg,rgba(74,144,217,.06),rgba(82,168,130,.06));
+  border:1px solid rgba(82,168,130,.18);border-radius:var(--r2);
+}
+.ai-box-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.ai-box-av{
+  width:33px;height:33px;border-radius:9px;background:var(--blt);
+  border:1px solid rgba(74,144,217,.2);
+  display:flex;align-items:center;justify-content:center;font-size:.88rem;color:var(--blue);flex-shrink:0;
+}
+.ai-box-title{font-size:.83rem;font-weight:600;color:var(--t1)}
+.ai-box-sub{font-size:.69rem;color:var(--t3)}
+.ai-box-text{font-size:.83rem;color:var(--t2);line-height:1.75}
+ 
+/* ─────────────────────────────────────────
+   WHAT-IF
+───────────────────────────────────────── */
+.wi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:10px;margin-bottom:1.4rem}
+.wi-card{
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r2);
+  padding:1.2rem;cursor:pointer;display:flex;flex-direction:column;gap:5px;
+  box-shadow:var(--sh0);transition:all .22s var(--ease);text-align:left;
+}
+.wi-card:hover{border-color:var(--sage);box-shadow:var(--sh1);transform:translateY(-3px)}
+.wi-card.picked{border-color:var(--sage);background:var(--slt)}
+.wi-card.gold{border-color:rgba(217,119,6,.25)}
+.wi-card.gold:hover,.wi-card.gold.picked{border-color:var(--amb);background:var(--alt)}
+.wi-icon{font-size:1.5rem;display:block;margin-bottom:2px}
+.wi-title{font-size:.83rem;font-weight:600;color:var(--t1)}
+.wi-desc{font-size:.7rem;color:var(--t3);flex:1;line-height:1.4}
+.wi-go{font-size:.7rem;color:var(--t3);margin-top:3px;transition:all .2s}
+.wi-card:hover .wi-go,.wi-card.picked .wi-go{transform:translateX(4px);color:var(--sage2)}
+ 
+.wi-result{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r3);
+  padding:1.8rem;box-shadow:var(--sh2);animation:fadeUp .3s var(--ease);
+}
+.wir-head{display:flex;align-items:center;gap:12px;margin-bottom:1.4rem}
+.wir-ico{font-size:1.7rem}
+.wir-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;color:var(--t1);margin-bottom:2px}
+.wir-sub{font-size:.73rem;color:var(--t3)}
+.wir-cols{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:1.2rem}
+.wir-col{padding:.95rem 1rem;border-radius:var(--r2)}
+.wir-col.before{background:var(--rlt);border:1px solid rgba(224,90,110,.15)}
+.wir-col.after{background:var(--glt);border:1px solid rgba(56,161,105,.18)}
+.wir-col-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.wir-col.before .wir-col-lbl{color:var(--rose)}
+.wir-col.after  .wir-col-lbl{color:var(--grn)}
+.wir-stat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:.79rem}
+.wir-stat:last-child{border-bottom:none}
+.wir-stat-l{color:var(--t2)}
+.wir-stat-v{font-weight:700}
+.wir-insight{
+  padding:.95rem 1rem;
+  background:linear-gradient(135deg,var(--slt),var(--blt));
+  border:1px solid rgba(82,168,130,.18);border-radius:var(--r1);
+  font-size:.83rem;color:var(--t2);line-height:1.68;margin-bottom:1rem;
+}
+.wir-insight strong{color:var(--sage2)}
+.wir-miles{background:var(--bg2);border-radius:var(--r1);padding:.9rem 1rem}
+.wm-lbl{font-size:.62rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.wm-row{display:flex;gap:8px;padding:4px 0;font-size:.77rem;color:var(--t2);line-height:1.5}
+.wm-n{color:var(--sage2);font-weight:700;flex-shrink:0}
+ 
+.spin-box{display:flex;align-items:center;gap:12px;padding:1.5rem 0}
+.spin{width:24px;height:24px;border-radius:50%;border:2.5px solid var(--bdr);border-top-color:var(--sage);animation:spinA .8s linear infinite;flex-shrink:0}
+.spin-txt{font-size:.84rem;color:var(--t2)}
+ 
+/* ─────────────────────────────────────────
+   AI COACH
+───────────────────────────────────────── */
+.coach-layout{display:grid;grid-template-columns:230px 1fr;gap:1.4rem;align-items:start}
+.coach-side{display:flex;flex-direction:column;gap:11px}
+.coach-card{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);
+  padding:1.3rem;box-shadow:var(--sh0);text-align:center;
+}
+.coach-av{
+  width:62px;height:62px;border-radius:50%;background:var(--g1);
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+  margin:0 auto 10px;box-shadow:0 4px 16px rgba(82,168,130,.35);
+  animation:coachBreath 3s ease-in-out infinite;
+}
+.coach-online{display:flex;align-items:center;justify-content:center;gap:5px;font-size:.69rem;font-weight:600;color:var(--grn);margin-bottom:6px}
+.co-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:badgePulse 2s infinite}
+.coach-name{font-weight:700;font-size:.9rem;color:var(--t1);margin-bottom:2px}
+.coach-bio{font-size:.71rem;color:var(--t3);line-height:1.5;margin-bottom:10px}
+.coach-stats{border-top:1px solid var(--bdr);padding-top:10px}
+.cs-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--bdr);font-size:.77rem}
+.cs-row:last-child{border-bottom:none}
+.cs-l{color:var(--t3)}
+.cs-v{font-weight:700;color:var(--blue)}
+.cs-v.r{color:var(--rose)}
+.cs-v.g{color:var(--grn)}
+.ql-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);padding:1.1rem;box-shadow:var(--sh0)}
+.ql-head{font-size:.65rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.ql-list{display:flex;flex-direction:column;gap:5px}
+.ql-btn{
+  text-align:left;padding:7px 10px;background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:var(--r1);color:var(--t2);font-size:.76rem;font-weight:500;
+  transition:all .18s;line-height:1.4;
+}
+.ql-btn:hover{border-color:var(--sage);color:var(--sage2);background:var(--slt)}
+ 
+/* Chat */
+.chat-panel{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r3);
+  overflow:hidden;box-shadow:var(--sh2);display:flex;flex-direction:column;
+}
+.chat-head{
+  padding:.85rem 1.2rem;
+  background:linear-gradient(135deg,rgba(82,168,130,.06),rgba(74,144,217,.06));
+  border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ch-left{display:flex;align-items:center;gap:9px}
+.ch-av{width:30px;height:30px;border-radius:50%;background:var(--g1);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.ch-name{font-size:.84rem;font-weight:600;color:var(--t1)}
+.ch-status{font-size:.68rem;color:var(--grn);display:flex;align-items:center;gap:4px}
+.chat-modes{display:flex;gap:4px;padding:7px 12px;border-bottom:1px solid var(--bdr);background:var(--bg2);overflow-x:auto;flex-wrap:nowrap}
+.chat-modes::-webkit-scrollbar{display:none}
+.cmode{
+  padding:5px 12px;border-radius:var(--rf);font-size:.71rem;font-weight:600;
+  background:var(--card);border:1px solid var(--bdr);color:var(--t3);
+  cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.cmode:hover{border-color:var(--bdr2);color:var(--t2)}
+.cmode.on{background:var(--slt);border-color:var(--sage);color:var(--sage2)}
+.chat-msgs{
+  flex:1;overflow-y:auto;padding:1.2rem;
+  display:flex;flex-direction:column;gap:.9rem;
+  min-height:370px;max-height:420px;
+}
+.chat-msgs::-webkit-scrollbar{width:4px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+.msg{display:flex;gap:9px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.msg-av{
+  width:29px;height:29px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:.82rem;
+  flex-shrink:0;margin-top:1px;
+}
+.msg.ai .msg-av{background:var(--slt);color:var(--sage2);border:1px solid rgba(82,168,130,.2)}
+.msg.user .msg-av{background:var(--blt);color:var(--blue);border:1px solid rgba(74,144,217,.2)}
+.msg-wrap{max-width:80%}
+.msg-bubble{
+  padding:10px 14px;border-radius:var(--r2);
+  font-size:.84rem;line-height:1.7;word-break:break-word;
+}
+.msg.ai .msg-bubble{background:var(--bg2);border:1px solid var(--bdr);color:var(--t1);border-bottom-left-radius:4px}
+.msg.user .msg-bubble{background:linear-gradient(135deg,var(--slt),var(--blt));border:1px solid rgba(82,168,130,.2);color:var(--t1);border-bottom-right-radius:4px}
+.msg-time{font-size:.62rem;color:var(--t4);margin-top:3px;padding:0 2px}
+.msg.user .msg-time{text-align:right}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.ty{width:7px;height:7px;border-radius:50%;background:var(--sage);animation:tyBounce 1.2s ease-in-out infinite}
+.ty:nth-child(2){animation-delay:.2s}
+.ty:nth-child(3){animation-delay:.4s}
+.chat-foot{padding:10px 12px;border-top:1px solid var(--bdr);display:flex;gap:8px;align-items:flex-end;background:var(--bg2)}
+.chat-ta{
+  flex:1;background:var(--card);border:1.5px solid var(--bdr);border-radius:var(--r2);
+  padding:9px 12px;color:var(--t1);font-size:.83rem;outline:none;
+  resize:none;max-height:110px;transition:border-color .2s;line-height:1.55;
+}
+.chat-ta:focus{border-color:var(--sage);box-shadow:var(--glow)}
+.chat-ta::placeholder{color:var(--t4)}
+.chat-send{
+  width:37px;height:37px;border-radius:var(--r1);flex-shrink:0;
+  background:var(--g1);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;
+  box-shadow:0 3px 12px rgba(82,168,130,.35);transition:all .2s;
+}
+.chat-send:hover{transform:scale(1.07);box-shadow:0 5px 18px rgba(82,168,130,.45)}
+.chat-send:disabled{opacity:.35;transform:none;cursor:not-allowed}
+ 
+/* ─────────────────────────────────────────
+   REPORT
+───────────────────────────────────────── */
+.report-hero{
+  background:var(--g1);border-radius:var(--r3);padding:2rem 2.2rem;
+  color:#fff;margin-bottom:1.4rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1.5rem;
+  position:relative;overflow:hidden;box-shadow:0 8px 30px rgba(82,168,130,.3);
+}
+.rh-orb{position:absolute;right:-40px;top:-40px;width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.07)}
+.rh-info h3{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:600;color:#fff;margin-bottom:3px}
+.rh-info p{font-size:.79rem;color:rgba(255,255,255,.75)}
+.rh-score{
+  text-align:center;position:relative;z-index:1;
+  background:rgba(255,255,255,.15);border-radius:var(--r2);
+  padding:1rem 1.4rem;backdrop-filter:blur(10px);flex-shrink:0;
+}
+.rh-score-n{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:#fff;line-height:1}
+.rh-score-l{font-size:.68rem;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px}
+.rh-score-g{font-size:.84rem;font-weight:600;color:#fff;margin-top:2px}
+.report-sections{display:flex;flex-direction:column;gap:10px}
+.rs{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r2);padding:1.15rem;box-shadow:var(--sh0)}
+.rs-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.rs-title{font-size:.85rem;font-weight:600;color:var(--t1)}
+.rs-val{font-size:.85rem;font-weight:700}
+.rs-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-bottom:7px}
+.rs-fill{height:100%;border-radius:3px;width:0;transition:width 1.1s var(--ease)}
+.rs-text{font-size:.77rem;color:var(--t2);line-height:1.57}
+ 
+/* ─────────────────────────────────────────
+   TOAST
+───────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:2rem;right:2rem;z-index:999;
+  background:var(--t1);color:var(--bg);
+  padding:10px 18px;border-radius:var(--r2);
+  font-size:.82rem;font-weight:500;box-shadow:var(--sh3);
+  opacity:0;transform:translateY(8px);
+  transition:all .3s var(--ease);pointer-events:none;max-width:300px;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+ 
+/* ─────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes badgePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+@keyframes ringPulse{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.55)}}
+@keyframes spinA{to{transform:rotate(360deg)}}
+@keyframes tyBounce{0%,80%,100%{transform:scale(.65);opacity:.3}40%{transform:scale(1);opacity:1}}
+@keyframes floatIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes coachBreath{0%,100%{box-shadow:0 4px 16px rgba(82,168,130,.35)}50%{box-shadow:0 6px 26px rgba(82,168,130,.55)}}
+ 
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media(max-width:900px){
+  .dash-grid{grid-template-columns:1fr}
+  .coach-layout{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .hero-card{flex-direction:column;text-align:center}
+  .hero-tags{justify-content:center}
+  .hero-right{justify-content:center}
+  .wir-cols{grid-template-columns:1fr}
+  .tab span:not(.tab-icon){display:none}
+  .tab{padding:.48rem .8rem}
+  .body{padding:1.2rem}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr}
+  .wi-grid{grid-template-columns:1fr 1fr}
+  .wlc-feats{grid-template-columns:1fr 1fr}
+  .fgrid{grid-template-columns:1fr}
+}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.164.0/build/three.module.js"
+  }
+}
+</script>
+</head>
+<body>
+ 
+<!-- ═══════════════════════ WELCOME ═══════════════════════ -->
+<div id="welcome">
+<div id="canvas-container" style="position:absolute;top:0;right:0;width:55%;height:100%;z-index:0;pointer-events:none;overflow:hidden"></div>
+ 
+  <nav class="wlc-bar">
+    <div class="brand">
+      <div class="brand-icon">🧬</div>
+      <span class="brand-name">MediTwin <span>AI</span></span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-icon" onclick="Theme.toggle()" id="wlc-theme">🌙</button>
+    </div>
+  </nav>
+ 
+  <div class="wlc-center">
+    <div class="wlc-badge"><div class="badge-dot"></div>AI-Powered Health Intelligence</div>
+    <h1 class="wlc-h1">Know your body.<br/><span class="hl">Own your health.</span></h1>
+    <p class="wlc-sub">Build your personal AI health dashboard in 2 minutes. Get risk predictions, simulate lifestyle changes, and chat with your AI health coach.</p>
+ 
+    <div class="wlc-feats">
+      <div class="wfeat"><div class="wfeat-icon">🔬</div><div class="wfeat-title">Health Analysis</div><div class="wfeat-desc">AI-powered risk predictions across 6 key health areas</div></div>
+      <div class="wfeat"><div class="wfeat-icon">🔮</div><div class="wfeat-title">What-If Simulator</div><div class="wfeat-desc">See how positive changes transform your health score</div></div>
+      <div class="wfeat"><div class="wfeat-icon">🤖</div><div class="wfeat-title">AI Health Coach</div><div class="wfeat-desc">Chat with an AI trained on your complete profile</div></div>
+      <div class="wfeat"><div class="wfeat-icon">📊</div><div class="wfeat-title">Health Score</div><div class="wfeat-desc">Your personal wellness score from 0–100</div></div>
+      <div class="wfeat"><div class="wfeat-icon">📋</div><div class="wfeat-title">Full Report</div><div class="wfeat-desc">5-dimension comprehensive wellness assessment</div></div>
+    </div>
+ 
+    <button class="wlc-cta" onclick="Setup.open()">Get Started — Free ✦</button>
+    <span class="wlc-note">✦ No account needed · Private</span>
+  </div>
+</div>
+ 
+<!-- ═══════════════════════ SETUP ═══════════════════════ -->
+<div id="setup">
+  <div class="setup-box">
+    <div class="setup-bar"><div class="setup-bar-fill" id="spf"></div></div>
+    <div class="setup-inner">
+ 
+      <!-- Step 1 -->
+      <div class="step on" id="s0">
+        <div class="step-lbl">Step 1 of 3</div>
+        <h2>About you 👋</h2>
+        <p>Your basic profile — the foundation of your health analysis.</p>
+        <div class="fgrid">
+          <div class="field"><label>Age</label><div class="field-row"><input type="range" id="age" min="15" max="85" value="28" oninput="Setup.sl(this,'agev','yrs')"/><span class="rv" id="agev">28 yrs</span></div></div>
+          <div class="field"><label>Biological Sex</label><select id="sex" class="fsel"><option value="male">Male</option><option value="female">Female</option><option value="other">Prefer not to say</option></select></div>
+          <div class="field"><label>Height</label><div class="field-row"><input type="range" id="height" min="140" max="210" value="170" oninput="Setup.sl(this,'htv','cm')"/><span class="rv" id="htv">170 cm</span></div></div>
+          <div class="field"><label>Weight</label><div class="field-row"><input type="range" id="weight" min="35" max="160" value="68" oninput="Setup.sl(this,'wtv','kg')"/><span class="rv" id="wtv">68 kg</span></div></div>
+          <div class="field"><label>Family Health History</label><select id="family" class="fsel"><option value="none">No major conditions</option><option value="diabetes">Diabetes</option><option value="heart">Heart Disease</option><option value="both">Diabetes &amp; Heart</option><option value="cancer">Cancer History</option></select></div>
+          <div class="field"><label>Smoking Status</label><select id="smoking" class="fsel"><option value="never">Never smoked ✓</option><option value="former">Former smoker</option><option value="current">Current smoker</option></select></div>
+        </div>
+        <div class="step-foot">
+          <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+          <button class="btn btn-p" onclick="Setup.go(1)">Continue →</button>
+        </div>
+      </div>
+ 
+      <!-- Step 2 -->
+      <div class="step" id="s1">
+        <div class="step-lbl">Step 2 of 3</div>
+        <h2>Daily habits 🌿</h2>
+        <p>Your lifestyle matters more than genetics — be honest with yourself!</p>
+        <div class="fgrid">
+          <div class="field"><label>Sleep per night</label><div class="field-row"><input type="range" id="sleep" min="3" max="12" value="7" step=".5" oninput="Setup.sl(this,'slv','hrs')"/><span class="rv" id="slv">7 hrs</span></div></div>
+          <div class="field"><label>Exercise per day</label><div class="field-row"><input type="range" id="exercise" min="0" max="120" value="20" oninput="Setup.sl(this,'exv','min')"/><span class="rv" id="exv">20 min</span></div></div>
+          <div class="field"><label>Water intake</label><div class="field-row"><input type="range" id="water" min="0" max="16" value="6" oninput="Setup.sl(this,'wtrv','glasses')"/><span class="rv" id="wtrv">6 glasses</span></div></div>
+          <div class="field"><label>Stress level</label><div class="field-row"><input type="range" id="stress" min="1" max="10" value="5" oninput="Setup.sl(this,'strv','/10')"/><span class="rv" id="strv">5/10</span></div></div>
+          <div class="field"><label>Alcohol per week</label><div class="field-row"><input type="range" id="alcohol" min="0" max="21" value="3" oninput="Setup.sl(this,'alcv','drinks')"/><span class="rv" id="alcv">3 drinks</span></div></div>
+          <div class="field"><label>Daily steps</label><div class="field-row"><input type="range" id="steps" min="0" max="20000" value="5000" step="500" oninput="Setup.sl(this,'stpv','steps')"/><span class="rv" id="stpv">5000 steps</span></div></div>
+        </div>
+        <div class="step-foot">
+          <div class="dots"><div class="dot"></div><div class="dot on"></div><div class="dot"></div></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-s" onclick="Setup.go(0)">← Back</button>
+            <button class="btn btn-p" onclick="Setup.go(2)">Continue →</button>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- Step 3 -->
+      <div class="step" id="s2">
+        <div class="step-lbl">Step 3 of 3</div>
+        <h2>Diet &amp; Goals ✨</h2>
+        <p>Choose your diet pattern and what you want to achieve.</p>
+        <div class="fgrid one" style="margin-bottom:1rem">
+          <div class="field">
+            <label>Diet Pattern</label>
+            <div class="pills" id="diet-pills">
+              <button class="pill on" data-v="balanced">🥦 Balanced</button>
+              <button class="pill" data-v="high-sugar">🍩 High Sugar</button>
+              <button class="pill" data-v="high-fat">🍔 High Fat</button>
+              <button class="pill" data-v="vegetarian">🥕 Vegetarian</button>
+              <button class="pill" data-v="vegan">🌱 Vegan</button>
+              <button class="pill" data-v="keto">🥩 Keto</button>
+              <button class="pill" data-v="junk">🍟 Processed</button>
+              <button class="pill" data-v="mediterranean">🫒 Mediterranean</button>
+            </div>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:1.4rem">
+          <label>Your Health Goals (pick all that apply)</label>
+          <div class="pills" id="goal-pills" style="margin-top:6px">
+            <button class="pill on" data-g="lose-weight">⚖️ Lose weight</button>
+            <button class="pill" data-g="build-muscle">💪 Build muscle</button>
+            <button class="pill" data-g="better-sleep">😴 Better sleep</button>
+            <button class="pill" data-g="reduce-stress">🧘 Less stress</button>
+            <button class="pill" data-g="heart-health">❤️ Heart health</button>
+            <button class="pill" data-g="energy">⚡ More energy</button>
+            <button class="pill" data-g="longevity">🌱 Longevity</button>
+            <button class="pill" data-g="mental-health">🧠 Mental health</button>
+          </div>
+        </div>
+        <div class="step-foot">
+          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot on"></div></div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-s" onclick="Setup.go(1)">← Back</button>
+            <button class="btn btn-p" id="gen-btn" onclick="Setup.generate()">✨ Build My Health Profile</button>
+          </div>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+</div>
+ 
+<!-- ═══════════════════════ APP ═══════════════════════ -->
+<div id="app">
+ 
+  <nav class="topnav">
+    <div class="nav-brand" onclick="App.toWelcome()" style="cursor:pointer">
+      <div class="nav-brand-icon">🧬</div>
+      <span class="nav-brand-name">MediTwin <span>AI</span></span>
+    </div>
+    <div class="nav-tabs" id="nav-tabs">
+      <button class="tab on" data-p="dashboard" onclick="Nav.go('dashboard',this)">
+        <span class="tab-icon">🏠</span><span>Dashboard</span>
+      </button>
+      <button class="tab" data-p="whatif" onclick="Nav.go('whatif',this)">
+        <span class="tab-icon">🔮</span><span>What-If</span>
+      </button>
+      <button class="tab" data-p="coach" onclick="Nav.go('coach',this)">
+        <span class="tab-icon">🤖</span><span>AI Coach</span>
+      </button>
+      <button class="tab" data-p="report" onclick="Nav.go('report',this)">
+        <span class="tab-icon">📋</span><span>Report</span>
+      </button>
+    </div>
+    <div class="nav-right">
+      <div class="score-chip">
+        <div>
+          <div class="sc-lbl">Score</div>
+          <div class="sc-val" id="nav-score">—</div>
+        </div>
+        <div class="sc-grade" id="nav-grade">—</div>
+      </div>
+      <button class="btn-icon" onclick="Theme.toggle()" id="theme-btn">🌙</button>
+      <button class="btn-icon" onclick="App.reset()" title="Start over">↺</button>
+    </div>
+  </nav>
+ 
+  <main class="body">
+ 
+    <!-- ── DASHBOARD ── -->
+    <div class="page on" id="page-dashboard">
+ 
+      <div class="hero-card" id="hero-card">
+        <div class="hero-left">
+          <div class="hero-greet" id="hero-greet">Good morning ☀️</div>
+          <div class="hero-title" id="hero-title">Your Health Dashboard</div>
+          <div class="hero-msg" id="hero-msg">Your personalised AI health profile is ready. Every positive step compounds into lasting wellbeing.</div>
+          <div class="hero-tags" id="hero-tags"></div>
+        </div>
+        <div class="hero-right">
+          <div class="avatar-wrap">
+            <div class="av-ring"></div>
+            <div class="av-ring av-ring2"></div>
+            <div class="av-face" id="av-face">🧑</div>
+          </div>
+          <div>
+            <div class="score-ring">
+              <svg class="score-svg" viewBox="0 0 100 100">
+                <circle class="sr-track" cx="50" cy="50" r="45"/>
+                <circle class="sr-fill" cx="50" cy="50" r="45" id="score-arc"/>
+              </svg>
+              <div class="score-center">
+                <div class="score-n" id="score-n">—</div>
+                <div class="score-l">Score</div>
+              </div>
+            </div>
+            <div class="score-g" id="score-g">—</div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class="stats-row">
+        <div class="stat c-b">
+          <span class="stat-icon">⚖️</span>
+          <div class="stat-lbl">BMI</div>
+          <div class="stat-val" id="v-bmi">—</div>
+          <div class="stat-sub" id="v-bmi-s">—</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="b-bmi" style="background:var(--blue)"></div></div>
+        </div>
+        <div class="stat c-a">
+          <span class="stat-icon">🕰️</span>
+          <div class="stat-lbl">Biological Age</div>
+          <div class="stat-val" id="v-bio">—</div>
+          <div class="stat-sub" id="v-bio-s">—</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="b-bio" style="background:var(--amb)"></div></div>
+        </div>
+        <div class="stat c-r">
+          <span class="stat-icon">❤️</span>
+          <div class="stat-lbl">Cardiovascular Age</div>
+          <div class="stat-val" id="v-card">—</div>
+          <div class="stat-sub" id="v-card-s">—</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="b-card" style="background:var(--rose)"></div></div>
+        </div>
+        <div class="stat c-g">
+          <span class="stat-icon">⚡</span>
+          <div class="stat-lbl">Metabolic Health</div>
+          <div class="stat-val" id="v-meta">—</div>
+          <div class="stat-sub" id="v-meta-s">—</div>
+          <div class="stat-bar"><div class="stat-bar-fill" id="b-meta" style="background:var(--grn)"></div></div>
+        </div>
+      </div>
+ 
+      <div class="pos-strip">
+        <div class="pos-icon">🌱</div>
+        <div class="pos-text" id="pos-text">Loading your health insight…</div>
+      </div>
+ 
+      <div class="dash-grid">
+        <div style="display:flex;flex-direction:column;gap:1.3rem">
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Risk Predictions <span class="badge">AI</span></div>
+              <button class="btn btn-s btn-sm" onclick="Nav.go('report',document.querySelector('[data-p=report]'))">Full Report →</button>
+            </div>
+            <div id="risk-list"></div>
+          </div>
+          <div class="ai-box">
+            <div class="ai-box-head">
+              <div class="ai-box-av">🤖</div>
+              <div>
+                <div class="ai-box-title">AI Health Summary</div>
+                <div class="ai-box-sub">Personalised analysis by MediTwin AI</div>
+              </div>
+            </div>
+            <div class="ai-box-text" id="ai-summary">—</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1.3rem">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Quick Actions</div></div>
+            <div class="qa-grid">
+              <button class="qa" onclick="Nav.go('whatif',document.querySelector('[data-p=whatif]'))">
+                <span class="qa-icon">🔮</span><div class="qa-title">What-If Sim</div><div class="qa-desc">See your future self</div>
+              </button>
+              <button class="qa" onclick="Nav.go('coach',document.querySelector('[data-p=coach]'))">
+                <span class="qa-icon">🤖</span><div class="qa-title">AI Coach</div><div class="qa-desc">Chat for advice</div>
+              </button>
+              <button class="qa" onclick="Nav.go('report',document.querySelector('[data-p=report]'))">
+                <span class="qa-icon">📋</span><div class="qa-title">Health Report</div><div class="qa-desc">Full assessment</div>
+              </button>
+              <button class="qa" onclick="Coach.ask('What is my biggest health risk and what one thing can I do about it today?');Nav.go('coach',document.querySelector('[data-p=coach]'))">
+                <span class="qa-icon">🎯</span><div class="qa-title">Top Priority</div><div class="qa-desc">Ask AI now</div>
+              </button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Health Trajectory</div></div>
+            <div id="tl-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ── WHAT-IF ── -->
+    <div class="page" id="page-whatif">
+      <div class="pg-head">
+        <div class="pg-title">What-If Simulator 🔮</div>
+        <div class="pg-sub">Choose a positive change and instantly see how it transforms your health score.</div>
+      </div>
+      <div class="wi-grid">
+        <button class="wi-card" data-s="exercise" onclick="WI.run(this)"><span class="wi-icon">🏃</span><div class="wi-title">30 min exercise daily</div><div class="wi-desc">Add moderate cardio every day</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card" data-s="sugar" onclick="WI.run(this)"><span class="wi-icon">🍭</span><div class="wi-title">Cut sugar by 50%</div><div class="wi-desc">Reduce refined sugar &amp; sweet drinks</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card" data-s="sleep" onclick="WI.run(this)"><span class="wi-icon">😴</span><div class="wi-title">Sleep 8 hours/night</div><div class="wi-desc">Full rest &amp; deep recovery</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card" data-s="quit-smoking" onclick="WI.run(this)"><span class="wi-icon">🚭</span><div class="wi-title">Quit smoking</div><div class="wi-desc">Eliminate tobacco completely</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card" data-s="diet" onclick="WI.run(this)"><span class="wi-icon">🫒</span><div class="wi-title">Mediterranean diet</div><div class="wi-desc">Whole grains, fish, olive oil</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card" data-s="stress" onclick="WI.run(this)"><span class="wi-icon">🧘</span><div class="wi-title">Halve your stress</div><div class="wi-desc">Mindfulness &amp; lifestyle balance</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card" data-s="water" onclick="WI.run(this)"><span class="wi-icon">💧</span><div class="wi-title">8 glasses water/day</div><div class="wi-desc">Stay fully hydrated daily</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card" data-s="steps" onclick="WI.run(this)"><span class="wi-icon">🚶</span><div class="wi-title">10,000 steps/day</div><div class="wi-desc">Active movement every day</div><div class="wi-go">→ Simulate</div></button>
+        <button class="wi-card gold" data-s="all" onclick="WI.run(this)"><span class="wi-icon">🌟</span><div class="wi-title">All changes together</div><div class="wi-desc">Your absolute best potential</div><div class="wi-go">→ Simulate</div></button>
+      </div>
+      <div id="wi-result"></div>
+    </div>
+ 
+    <!-- ── AI COACH ── -->
+    <div class="page" id="page-coach">
+      <div class="pg-head">
+        <div class="pg-title">AI Health Coach 🤖</div>
+        <div class="pg-sub">Your personal AI advisor — fully trained on your health profile. Ask anything.</div>
+      </div>
+      <div class="coach-layout">
+        <div class="coach-side">
+          <div class="coach-card">
+            <div class="coach-av">🤖</div>
+            <div class="coach-online"><div class="co-dot"></div>Online &amp; Ready</div>
+            <div class="coach-name">MediTwin Coach</div>
+            <div class="coach-bio">Your AI health advisor, trained on your complete personal health profile.</div>
+            <div class="coach-stats">
+              <div class="cs-row"><span class="cs-l">Health Score</span><span class="cs-v" id="cp-score">—</span></div>
+              <div class="cs-row"><span class="cs-l">Biological Age</span><span class="cs-v" id="cp-bio">—</span></div>
+              <div class="cs-row"><span class="cs-l">Top Risk</span><span class="cs-v r" id="cp-risk">—</span></div>
+              <div class="cs-row"><span class="cs-l">Health Grade</span><span class="cs-v g" id="cp-grade">—</span></div>
+            </div>
+          </div>
+          <div class="ql-card">
+            <div class="ql-head">Quick questions</div>
+            <div class="ql-list">
+              <button class="ql-btn" onclick="Coach.ask('What is my single biggest health risk and what one thing can I do about it today?')">🎯 My biggest health risk</button>
+              <button class="ql-btn" onclick="Coach.ask('Create a personalised 7-day workout plan for my current fitness level.')">💪 7-day workout plan</button>
+              <button class="ql-btn" onclick="Coach.ask('Based on my profile, which foods should I eat more of and which should I avoid?')">🥗 Best foods for me</button>
+              <button class="ql-btn" onclick="Coach.ask('Give me a concrete 30-day plan to raise my health score by 10 points.')">📈 Raise my health score</button>
+              <button class="ql-btn" onclick="Coach.ask('What health wins should I celebrate — what am I already doing right?')">🏆 My health wins</button>
+              <button class="ql-btn" onclick="Coach.ask('Design a calming bedtime routine to improve my sleep and lower my stress.')">😴 Better sleep routine</button>
+              <button class="ql-btn" onclick="Coach.ask('Create a personalised weekly meal plan based on my diet and health goals.')">🍽️ Weekly meal plan</button>
+              <button class="ql-btn" onclick="Coach.ask('How can I build sustainable healthy habits that actually stick long term?')">🌱 Build lasting habits</button>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="chat-panel">
+          <div class="chat-head">
+            <div class="ch-left">
+              <div class="ch-av">🤖</div>
+              <div>
+                <div class="ch-name">MediTwin Health Coach</div>
+                <div class="ch-status"><div class="co-dot"></div>Online — your profile is loaded</div>
+              </div>
+            </div>
+            <button class="btn btn-s btn-sm" onclick="Coach.clear()">Clear chat</button>
+          </div>
+          <div class="chat-modes">
+            <button class="cmode on" data-m="general" onclick="Coach.setMode('general',this)">💬 General</button>
+            <button class="cmode" data-m="nutrition" onclick="Coach.setMode('nutrition',this)">🥗 Nutrition</button>
+            <button class="cmode" data-m="fitness" onclick="Coach.setMode('fitness',this)">💪 Fitness</button>
+            <button class="cmode" data-m="mental" onclick="Coach.setMode('mental',this)">🧠 Mental</button>
+            <button class="cmode" data-m="sleep" onclick="Coach.setMode('sleep',this)">😴 Sleep</button>
+          </div>
+          <div class="chat-msgs" id="chat-msgs">
+            <div class="msg ai">
+              <div class="msg-av">🤖</div>
+              <div class="msg-wrap">
+                <div class="msg-bubble">
+                  I'm your <strong>MediTwin AI Health Coach</strong> — ask me anything about nutrition, fitness, sleep, stress, or living better.
+                </div>
+                <div class="msg-time">Just now</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-foot">
+            <textarea id="chat-ta" class="chat-ta" rows="1"
+              placeholder="Ask anything — diet, fitness, sleep, stress, risks, meal plans…"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();Coach.send()}"
+              oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,110)+'px'"></textarea>
+            <button class="chat-send" id="chat-send-btn" onclick="Coach.send()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ── REPORT ── -->
+    <div class="page" id="page-report">
+      <div class="pg-head">
+        <div class="pg-title">Health Report 📋</div>
+        <div class="pg-sub">Your comprehensive 5-dimension wellness assessment.</div>
+      </div>
+      <div id="report-area">
+        <div style="text-align:center;padding:3rem;color:var(--t3)">
+          <div style="font-size:2.5rem;margin-bottom:1rem">📋</div>
+          <div style="font-size:.9rem">Complete your health profile to generate your full report.</div>
+        </div>
+      </div>
+    </div>
+ 
+  </main>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
+<script>
+'use strict';
+ 
+/* ── CONFIG ── */
+const API_BASE = window.location.origin + '/api';
+ 
+/* ── STATE ── */
+const S = {
+  diet: 'balanced',
+  goals: ['lose-weight'],
+  twin: null,
+  profile: null,
+  chatHistory: [],
+  chatMode: 'general'
+};
+ 
+/* ── THEME ── */
+const Theme = {
+  dark: false,
+  toggle() {
+    this.dark = !this.dark;
+    document.documentElement.setAttribute('data-theme', this.dark ? 'dark' : 'light');
+    localStorage.setItem('meditwin-theme', this.dark ? 'dark' : 'light');
+    const icon = this.dark ? '☀️' : '🌙';
+    const t  = document.getElementById('theme-btn');
+    const wt = document.getElementById('wlc-theme');
+    if (t) t.textContent = icon;
+    if (wt) wt.textContent = icon;
+  }
+};
+ 
+// Restore theme on load
+const savedTheme = localStorage.getItem('meditwin-theme');
+if (savedTheme === 'dark') {
+  Theme.dark = true;
+  document.documentElement.setAttribute('data-theme', 'dark');
+  const t  = document.getElementById('theme-btn');
+  const wt = document.getElementById('wlc-theme');
+  if (t) t.textContent = '☀️';
+  if (wt) wt.textContent = '☀️';
+}
+ 
+/* ── TOAST ── */
+const Toast = {
+  show(msg, dur = 3000) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove('show'), dur);
+  }
+};
+ 
+/* ── NAV ── */
+const Nav = {
+  go(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+    const pg = document.getElementById('page-' + name);
+    if (pg) pg.classList.add('on');
+    const matchTab = document.querySelector(`.tab[data-p="${name}"]`);
+    if (matchTab) matchTab.classList.add('on');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+ 
+/* ── SETUP ── */
+const Setup = {
+  step: 0,
+ 
+  open() {
+    document.getElementById('welcome').style.display = 'none';
+    document.getElementById('setup').classList.add('show');
+    this._initSliders();
+    this._initPills();
+  },
+ 
+  _initSliders() {
+    document.querySelectorAll('input[type=range]').forEach(el => this._updateBg(el));
+  },
+ 
+  _updateBg(el) {
+    const pct = ((+el.value - +el.min) / (+el.max - +el.min) * 100).toFixed(1);
+    el.style.background =
+      `linear-gradient(to right,#52a882 ${pct}%,var(--bdr) ${pct}%)`;
+  },
+ 
+  sl(el, vid, unit) {
+    this._updateBg(el);
+    const v = +el.value;
+    document.getElementById(vid).textContent = (unit === '/10') ? v + '/10' : v + ' ' + unit;
+  },
+ 
+  _initPills() {
+    document.querySelectorAll('#diet-pills .pill').forEach(p => {
+      p.addEventListener('click', () => {
+        document.querySelectorAll('#diet-pills .pill').forEach(x => x.classList.remove('on'));
+        p.classList.add('on');
+        S.diet = p.dataset.v;
+      });
+    });
+    document.querySelectorAll('#goal-pills .pill').forEach(p => {
+      p.addEventListener('click', () => {
+        p.classList.toggle('on');
+        S.goals = Array.from(document.querySelectorAll('#goal-pills .pill.on')).map(x => x.dataset.g);
+        if (!S.goals.length) { p.classList.add('on'); S.goals = [p.dataset.g]; }
+      });
+    });
+  },
+ 
+  go(n) {
+    document.querySelector('.step.on')?.classList.remove('on');
+    document.getElementById('s' + n)?.classList.add('on');
+    this.step = n;
+    document.getElementById('spf').style.width = [33, 66, 100][n] + '%';
+  },
+ 
+  profile() {
+    return {
+      age:      +document.getElementById('age').value,
+      sex:       document.getElementById('sex').value,
+      height:   +document.getElementById('height').value,
+      weight:   +document.getElementById('weight').value,
+      family:    document.getElementById('family').value,
+      smoking:   document.getElementById('smoking').value,
+      sleep:    +document.getElementById('sleep').value,
+      exercise: +document.getElementById('exercise').value,
+      water:    +document.getElementById('water').value,
+      stress:   +document.getElementById('stress').value,
+      alcohol:  +document.getElementById('alcohol').value,
+      steps:    +document.getElementById('steps').value,
+      diet:      S.diet,
+      goals:     S.goals
+    };
+  },
+ 
+  async generate() {
+    const btn = document.getElementById('gen-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Building…'; }
+ 
+    const p   = this.profile();
+    S.profile = p;
+    const bmi = +(p.weight / ((p.height / 100) ** 2)).toFixed(1);
+ 
+    const prompt = `Analyse this health profile and return ONLY valid JSON with no markdown fences or extra text:
+Age:${p.age}, Sex:${p.sex}, BMI:${bmi}(${p.weight}kg/${p.height}cm), Family:${p.family}, Smoking:${p.smoking}, Sleep:${p.sleep}h, Exercise:${p.exercise}min/day, Diet:${p.diet}, Stress:${p.stress}/10, Water:${p.water}gl, Alcohol:${p.alcohol}/wk, Steps:${p.steps}/day, Goals:${p.goals.join(',')}
+ 
+Return this JSON exactly:
+{"healthScore":<0-100>,"scoreLabel":"Excellent|Good|Fair|Poor|Critical","biologicalAge":<int>,"cardiovascularAge":<int>,"metabolicScore":"Excellent|Good|Fair|Poor","bmi":${bmi},"bmiCategory":"Underweight|Normal weight|Overweight|Obese","profileTags":["<4 descriptive health tags, e.g. Non-smoker, Active, Good sleeper, Balanced diet>"],"positiveCallout":"<1 warm uplifting sentence about their biggest genuine health strength>","heroMessage":"<1 short motivating sentence personalised to their goals, no names>","risks":[{"name":"Type 2 Diabetes","icon":"🩸","pct":<0-95>,"level":"low|medium|high","detail":"<1 sentence>","tip":"<1 specific actionable tip>"},{"name":"Heart Disease","icon":"❤️","pct":<0-95>,"level":"low|medium|high","detail":"<1 sentence>","tip":"<1 tip>"},{"name":"Hypertension","icon":"💢","pct":<0-95>,"level":"low|medium|high","detail":"<1 sentence>","tip":"<1 tip>"},{"name":"Metabolic Syndrome","icon":"⚖️","pct":<0-95>,"level":"low|medium|high","detail":"<1 sentence>","tip":"<1 tip>"},{"name":"Sleep Disorder","icon":"😴","pct":<0-95>,"level":"low|medium|high","detail":"<1 sentence>","tip":"<1 tip>"},{"name":"Mental Burnout","icon":"🧠","pct":<0-95>,"level":"low|medium|high","detail":"<1 sentence>","tip":"<1 tip>"}],"timeline":[{"period":"1–2 years","event":"<personalised health milestone>","color":"green|amber|red"},{"period":"3–5 years","event":"<event>","color":"green|amber|red"},{"period":"6–10 years","event":"<event>","color":"green|amber|red"}],"aiSummary":"<2–3 warm encouraging sentences about the health picture and biggest opportunity>","reportSections":[{"title":"Physical Fitness","score":<0-100>,"text":"<2 specific sentences>"},{"title":"Nutrition & Diet","score":<0-100>,"text":"<2 sentences>"},{"title":"Mental Wellbeing","score":<0-100>,"text":"<2 sentences>"},{"title":"Sleep Quality","score":<0-100>,"text":"<2 sentences>"},{"title":"Cardiovascular Health","score":<0-100>,"text":"<2 sentences>"}]}`;
+ 
+    try {
+      const raw = await API.call([{ role: 'user', content: prompt }], 2000);
+      S.twin = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    } catch (e) {
+      console.warn('AI analysis failed, using fallback:', e);
+      S.twin = Fallback.twin(p, bmi);
+    }
+ 
+    document.getElementById('setup').classList.remove('show');
+    document.getElementById('app').classList.add('show');
+    Render.dashboard(S.twin, S.profile);
+    Render.report(S.twin);
+  }
+};
+ 
+/* ── API ── */
+const API = {
+  async call(messages, maxTokens = 900, system = '') {
+    const body = { messages, max_tokens: maxTokens };
+    if (system) body.system = system;
+    const res = await fetch(API_BASE + '/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || 'API request failed');
+    return d.reply;
+  }
+};
+ 
+/* ── FALLBACK ── */
+const Fallback = {
+  twin(p, bmi) {
+    const dR = Math.min(90, 10 + (bmi > 25 ? 18 : 0) + (['high-sugar','junk'].includes(p.diet) ? 20 : 0) + (['diabetes','both'].includes(p.family) ? 24 : 0) + (p.exercise < 20 ? 10 : 0));
+    const hR = Math.min(90, 10 + (p.smoking === 'current' ? 25 : p.smoking === 'former' ? 10 : 0) + (p.stress > 6 ? 15 : 0) + (['heart','both'].includes(p.family) ? 20 : 0) + (bmi > 28 ? 8 : 0));
+    const bpR = Math.min(90, 8 + (p.stress > 6 ? 18 : 0) + (p.alcohol > 7 ? 12 : 0) + (p.exercise < 15 ? 10 : 0));
+    const sc = Math.max(22, Math.min(97, Math.round(100 - dR * .17 - hR * .17 - bpR * .07 + (p.exercise > 30 ? 10 : 0) + (p.sleep >= 7 ? 5 : 0) + (['mediterranean','vegan','vegetarian'].includes(p.diet) ? 8 : 0) + (p.steps > 8000 ? 5 : 0))));
+    const lbl = sc >= 85 ? 'Excellent' : sc >= 70 ? 'Good' : sc >= 55 ? 'Fair' : sc >= 40 ? 'Poor' : 'Critical';
+    const bioAge = Math.round(p.age + (sc < 55 ? 5 : sc < 70 ? 2 : -2));
+    const dScores = { mediterranean: 88, vegan: 83, vegetarian: 79, balanced: 72, keto: 65, 'high-fat': 42, 'high-sugar': 32, junk: 22 };
+    return {
+      healthScore: sc, scoreLabel: lbl,
+      biologicalAge: bioAge,
+      cardiovascularAge: Math.round(p.age + (hR > 50 ? 4 : 0)),
+      metabolicScore: bmi < 25 && dR < 30 ? 'Good' : bmi > 30 ? 'Poor' : 'Fair',
+      bmi, bmiCategory: bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal weight' : bmi < 30 ? 'Overweight' : 'Obese',
+      profileTags: [
+        p.smoking === 'never' ? 'Non-smoker ✓' : 'Active smoker',
+        p.exercise > 30 ? 'Physically active' : 'Needs more movement',
+        p.sleep < 6 ? 'Sleep deprived' : p.sleep >= 7 ? 'Good sleeper' : 'Light sleeper',
+        ['mediterranean','vegan','vegetarian'].includes(p.diet) ? 'Healthy diet' : 'Diet needs work'
+      ],
+      positiveCallout: p.smoking === 'never'
+        ? 'Being tobacco-free is a powerful foundation — you\'ve already eliminated one of the most significant modifiable health risks.'
+        : 'The fact that you\'re taking time to understand your health is itself a strength — awareness is the first step to lasting change.',
+      heroMessage: p.goals.includes('energy')
+        ? 'Let\'s unlock the vibrant energy your body is capable of.'
+        : p.goals.includes('longevity')
+          ? 'Every healthy choice you make today is an investment in your future self.'
+          : 'You have real strengths to build on — let\'s make the most of them.',
+      risks: [
+        { name: 'Type 2 Diabetes', icon: '🩸', pct: dR,  level: dR < 30 ? 'low' : dR < 60 ? 'medium' : 'high',  detail: 'Shaped by BMI, dietary pattern, and family history.',            tip: 'Replace refined carbs with whole grains and increase vegetables.' },
+        { name: 'Heart Disease',   icon: '❤️', pct: hR,  level: hR < 30 ? 'low' : hR < 60 ? 'medium' : 'high',  detail: 'Influenced by smoking, chronic stress, and genetic factors.',  tip: '30 minutes of cardio 5x per week significantly lowers cardiac risk.' },
+        { name: 'Hypertension',   icon: '💢', pct: bpR, level: bpR < 30 ? 'low' : bpR < 60 ? 'medium' : 'high', detail: 'Stress levels and alcohol intake are key drivers.',             tip: '10 minutes of deep breathing daily and reducing sodium both help.' },
+        { name: 'Metabolic Syndrome', icon: '⚖️', pct: Math.round(bmi > 30 ? 68 : bmi > 25 ? 38 : 13), level: bmi > 30 ? 'high' : bmi > 25 ? 'medium' : 'low', detail: 'BMI of ' + bmi + ' — ' + (bmi < 25 ? 'within the healthy range' : 'above the ideal range') + '.', tip: 'Resistance training 3x per week improves insulin sensitivity.' },
+        { name: 'Sleep Disorder', icon: '😴', pct: p.sleep < 6 ? 64 : p.sleep < 7 ? 34 : 13, level: p.sleep < 6 ? 'high' : p.sleep < 7 ? 'medium' : 'low', detail: 'Averaging ' + p.sleep + 'h — ' + (p.sleep < 7 ? 'below' : 'meeting') + ' the recommended 7-9 hours.', tip: 'A consistent sleep/wake time even on weekends is the most effective fix.' },
+        { name: 'Mental Burnout',  icon: '🧠', pct: Math.min(90, p.stress * 9), level: p.stress >= 7 ? 'high' : p.stress >= 5 ? 'medium' : 'low', detail: 'Stress at ' + p.stress + '/10 — chronic elevation affects every body system.', tip: '10 minutes of daily mindfulness measurably reduces cortisol over time.' }
+      ],
+      timeline: [
+        { period: '1-2 years', event: sc > 70 ? 'Stable outlook — building positive habits now creates compounding benefits ahead.' : 'Proactive check-ups advised. Small consistent changes now prevent larger issues later.', color: sc > 70 ? 'green' : 'amber' },
+        { period: '3-5 years', event: hR > 50 ? 'Cardiovascular health becomes the key focus. Heart-healthy habits now shift this trajectory significantly.' : 'Metabolic changes may emerge — maintaining exercise and diet quality is key.', color: hR > 50 ? 'red' : 'amber' },
+        { period: '6-10 years', event: dR > 60 ? 'Metabolic syndrome risk is real but fully preventable with consistent lifestyle change starting today.' : 'With sustained positive habits, your long-term health trajectory looks genuinely bright.', color: dR > 60 ? 'red' : 'green' }
+      ],
+      aiSummary: 'Your health profile shows someone with genuine strengths and clear opportunities. ' + (p.smoking === 'never' ? 'Being tobacco-free is a meaningful advantage. ' : '') + 'The highest-impact area to focus on is ' + (dR > hR ? 'metabolic health through diet and movement' : 'cardiovascular fitness and stress management') + '. With a few intentional changes, both your health score and biological age can improve measurably over the coming months.',
+      reportSections: [
+        { title: 'Physical Fitness',      score: Math.max(10, Math.round(p.exercise / 60 * 70 + p.steps / 20000 * 30)), text: 'Exercise at ' + p.exercise + 'min/day is ' + (p.exercise >= 30 ? 'meeting' : 'below') + ' the recommended 150min/week. ' + (p.steps > 8000 ? 'Your step count is commendably active.' : 'Increasing daily steps would accelerate progress.') },
+        { title: 'Nutrition & Diet',      score: dScores[p.diet] || 65, text: 'A ' + p.diet + ' diet has ' + (['mediterranean','vegan','vegetarian'].includes(p.diet) ? 'strong evidence supporting longevity' : 'moderate health implications with room for improvement') + '. Water intake at ' + p.water + ' glasses is ' + (p.water >= 8 ? 'optimal' : 'below the recommended 8 per day') + '.' },
+        { title: 'Mental Wellbeing',      score: Math.max(10, Math.round((11 - p.stress) / 10 * 100)), text: 'Stress at ' + p.stress + '/10 is ' + (p.stress > 6 ? 'elevated and warrants attention' : 'manageable, a real strength to protect') + '. Regular mindfulness and social connection are the most evidence-backed interventions.' },
+        { title: 'Sleep Quality',         score: Math.min(100, Math.round(p.sleep / 9 * 100)), text: p.sleep + 'h of sleep ' + (p.sleep >= 7 ? 'meets the 7-9h recommendation' : 'falls short of the recommended 7-9 hours') + '. ' + (p.sleep < 6 ? 'Chronic deprivation impacts metabolism, immunity, and mood significantly.' : 'Consistent sleep timing would further improve quality.') },
+        { title: 'Cardiovascular Health', score: Math.max(10, Math.round(100 - hR - bpR * .3)), text: 'Estimated cardiovascular age is ' + Math.round(p.age + (hR > 50 ? 4 : 0)) + ' years. ' + (p.smoking === 'current' ? 'Quitting smoking is the single most impactful cardiovascular change available.' : 'Not smoking is a major cardiovascular advantage, genuinely significant for long-term heart health.') }
+      ]
+    };
+  },
+ 
+  scenario(t, s) {
+    const deltas = { exercise: 9, sugar: 8, sleep: 7, 'quit-smoking': 15, diet: 11, stress: 9, water: 5, steps: 6, all: 23 };
+    const delta = deltas[s] || 8;
+    return {
+      newScore:     Math.min(97, (t.healthScore || 50) + delta),
+      scoreDelta:   delta,
+      bioAgeDelta:  Math.round(delta * .4),
+      changes:      (t.risks || []).slice(0, 3).map(r => ({ metric: r.name, before: r.pct, after: Math.max(5, r.pct - Math.round(delta * .85)) })),
+      timeframe:    s === 'all' ? '2-3 months' : '4-8 weeks',
+      insight:      'This change would create a meaningful, measurable shift in your health profile. Based on your metrics, you\'d likely notice improvements in energy and wellbeing within the first couple of weeks, with risk reductions becoming measurable over the following months.',
+      milestones:   ['Week 1-2: Increased energy and improved mood', 'Month 1: Measurable improvement in key health markers', 'Month 3: Significant reduction in primary risk factors']
+    };
+  }
+};
+ 
+/* ── RENDER ── */
+const Render = {
+  dashboard(d, p) {
+    if (!d || !p) return;
+    const bmi      = d.bmi;
+    const scoreCol = d.healthScore >= 80 ? '#38a169' : d.healthScore >= 60 ? '#d97706' : '#e05a6e';
+ 
+    this._t('nav-score', d.healthScore);
+    const ng = document.getElementById('nav-grade');
+    if (ng) { ng.textContent = d.scoreLabel; ng.style.color = scoreCol; }
+ 
+    const h = new Date().getHours();
+    this._t('hero-greet', h < 12 ? 'Good morning ☀️' : h < 17 ? 'Good afternoon 🌤️' : 'Good evening 🌙');
+    this._t('hero-title', 'Health Score: ' + d.healthScore + '/100 — ' + d.scoreLabel);
+    this._t('hero-msg',   d.heroMessage || d.positiveCallout || '');
+ 
+    document.getElementById('av-face').textContent = p.sex === 'female' ? '👩' : p.sex === 'male' ? '👨' : '🧑';
+ 
+    const tagsEl = document.getElementById('hero-tags');
+    if (tagsEl) {
+      tagsEl.innerHTML = '';
+      (d.profileTags || []).forEach(tag => {
+        const tl  = tag.toLowerCase();
+        const cls = (tl.includes('non-smoker') || tl.includes('active') || tl.includes('good sleeper') || tl.includes('healthy diet') || tl.includes('✓'))
+          ? 'htag-g'
+          : (tl.includes('smoker') || tl.includes('deprived') || tl.includes('needs'))
+            ? 'htag-r'
+            : (tl.includes('light sleeper') || tl.includes('work'))
+              ? 'htag-a'
+              : 'htag-b';
+        const span = document.createElement('span');
+        span.className = 'htag ' + cls;
+        span.textContent = tag;
+        tagsEl.appendChild(span);
+      });
+    }
+ 
+    const arc = document.getElementById('score-arc');
+    if (arc) {
+      arc.style.stroke = scoreCol;
+      setTimeout(() => { arc.style.strokeDashoffset = 283 - (d.healthScore / 100) * 283; }, 150);
+    }
+    this._t('score-n', d.healthScore);
+    const sg = document.getElementById('score-g');
+    if (sg) { sg.textContent = d.scoreLabel; sg.style.color = scoreCol; }
+ 
+    const barDelay = 300;
+    this._t('v-bmi',    bmi);
+    this._t('v-bmi-s',  d.bmiCategory);
+    setTimeout(() => this._bar('b-bmi',  Math.min(100, bmi * 3),      'var(--blue)'), barDelay);
+ 
+    this._t('v-bio',    d.biologicalAge + ' yrs');
+    this._t('v-bio-s',  d.biologicalAge < p.age ? (p.age - d.biologicalAge) + 'y younger than calendar' : d.biologicalAge > p.age ? (d.biologicalAge - p.age) + 'y older' : 'Matches calendar age');
+    setTimeout(() => this._bar('b-bio',  Math.min(100, d.biologicalAge / 85 * 100), 'var(--amb)'), barDelay);
+ 
+    this._t('v-card',   d.cardiovascularAge + ' yrs');
+    this._t('v-card-s', d.cardiovascularAge > p.age ? 'Elevated risk' : 'Healthy range');
+    setTimeout(() => this._bar('b-card', Math.min(100, d.cardiovascularAge / 85 * 100), 'var(--rose)'), barDelay);
+ 
+    this._t('v-meta',   d.metabolicScore);
+    this._t('v-meta-s', 'Metabolic efficiency');
+    setTimeout(() => this._bar('b-meta', { Poor: 22, Fair: 50, Good: 75, Excellent: 95 }[d.metabolicScore] || 50, 'var(--grn)'), barDelay);
+ 
+    this._html('pos-text', d.positiveCallout || '');
+ 
+    const rl = document.getElementById('risk-list');
+    if (rl) {
+      rl.innerHTML = '';
+      (d.risks || []).forEach((r, i) => {
+        const col = r.level === 'low' ? '#38a169' : r.level === 'medium' ? '#d97706' : '#e05a6e';
+        const bg  = r.level === 'low' ? 'var(--glt)' : r.level === 'medium' ? 'var(--alt)' : 'var(--rlt)';
+        const row = document.createElement('div');
+        row.className = 'risk-row';
+        row.innerHTML = `
+          <div class="risk-ico" style="background:${bg}">${r.icon}</div>
+          <div class="risk-body">
+            <div class="risk-name">${r.name}</div>
+            <div class="risk-tip">${r.tip || r.detail}</div>
+            <div class="risk-bar"><div class="risk-bar-fill" id="rf${i}" style="background:${col}"></div></div>
+          </div>
+          <div class="risk-right">
+            <div class="risk-pct" style="color:${col}">${r.pct}%</div>
+            <div class="risk-lvl" style="color:${col}">${r.level}</div>
+          </div>`;
+        rl.appendChild(row);
+        setTimeout(() => {
+          const f = document.getElementById('rf' + i);
+          if (f) f.style.width = r.pct + '%';
+        }, 400 + i * 80);
+      });
+    }
+ 
+    this._t('ai-summary', d.aiSummary || '');
+ 
+    const tl = document.getElementById('tl-list');
+    if (tl) {
+      tl.innerHTML = '';
+      (d.timeline || []).forEach((t, i) => {
+        const c       = t.color === 'green' ? '#38a169' : t.color === 'red' ? '#e05a6e' : '#d97706';
+        const hasLine = i < (d.timeline.length - 1);
+        const row     = document.createElement('div');
+        row.className = 'tl-row';
+        row.innerHTML = `
+          <div class="tl-spine">
+            <div class="tl-dot" style="background:${c}"></div>
+            ${hasLine ? '<div class="tl-line"></div>' : ''}
+          </div>
+          <div class="tl-body">
+            <div class="tl-when">${t.period}</div>
+            <div class="tl-text">${t.event}</div>
+          </div>`;
+        tl.appendChild(row);
+      });
+    }
+ 
+    this._t('cp-score', (d.healthScore || '—') + '/100');
+    this._t('cp-bio',   (d.biologicalAge || '—') + ' yrs');
+    const topRisk = (d.risks || []).slice().sort((a, b) => b.pct - a.pct)[0];
+    this._t('cp-risk',  topRisk ? topRisk.name : '—');
+    this._t('cp-grade', d.scoreLabel || '—');
+  },
+ 
+  report(d) {
+    if (!d?.reportSections) return;
+    const area = document.getElementById('report-area');
+    if (!area) return;
+    const sc   = d.healthScore || 0;
+    const bg   = sc >= 80 ? 'linear-gradient(135deg,#52a882,#38a169)' : sc >= 60 ? 'linear-gradient(135deg,#d97706,#f6ad55)' : 'linear-gradient(135deg,#e05a6e,#c53030)';
+    const cf   = s => s >= 75 ? '#38a169' : s >= 50 ? '#d97706' : '#e05a6e';
+ 
+    area.innerHTML = `
+      <div class="report-hero" style="background:${bg}">
+        <div class="rh-orb"></div>
+        <div class="rh-info">
+          <h3>Your Health Report</h3>
+          <p>Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+        <div class="rh-score">
+          <div class="rh-score-n">${sc}</div>
+          <div class="rh-score-l">Health Score</div>
+          <div class="rh-score-g">${d.scoreLabel || '—'}</div>
+        </div>
+      </div>
+      <div class="report-sections">
+        ${(d.reportSections || []).map(s => `
+          <div class="rs">
+            <div class="rs-head">
+              <div class="rs-title">${s.title}</div>
+              <div class="rs-val" style="color:${cf(s.score)}">${s.score}/100</div>
+            </div>
+            <div class="rs-bar"><div class="rs-fill" id="rb-${s.title.replace(/\s/g, '')}" style="background:${cf(s.score)}"></div></div>
+            <div class="rs-text">${s.text}</div>
+          </div>`).join('')}
+      </div>`;
+ 
+    setTimeout(() => {
+      (d.reportSections || []).forEach(s => {
+        const el = document.getElementById('rb-' + s.title.replace(/\s/g, ''));
+        if (el) el.style.width = s.score + '%';
+      });
+    }, 300);
+  },
+ 
+  _t(id, txt)   { const e = document.getElementById(id); if (e) e.textContent = txt; },
+  _html(id, h)  { const e = document.getElementById(id); if (e) e.innerHTML  = h;   },
+  _bar(id, pct, col) {
+    const e = document.getElementById(id);
+    if (e) { e.style.width = pct + '%'; e.style.background = col; }
+  }
+};
+ 
+/* ── WHAT-IF ── */
+const WI = {
+  async run(el) {
+    document.querySelectorAll('.wi-card').forEach(c => c.classList.remove('picked'));
+    el.classList.add('picked');
+ 
+    const s   = el.dataset.s;
+    const box = document.getElementById('wi-result');
+    const t   = S.twin;
+ 
+    if (!t) {
+      box.innerHTML = '<div class="wi-result" style="text-align:center;padding:2rem;color:var(--t3)">Please complete your health profile first.</div>';
+      return;
+    }
+ 
+    box.innerHTML = `
+      <div class="wi-result">
+        <div class="spin-box">
+          <div class="spin"></div>
+          <div class="spin-txt">Simulating "${el.querySelector('.wi-title').textContent}"…</div>
+        </div>
+      </div>`;
+ 
+    const scenarios = {
+      exercise:      'Add 30 minutes of moderate cardio exercise every day',
+      sugar:         'Reduce refined sugar and sweet drinks by 50%',
+      sleep:         'Sleep a full 8 hours every night consistently',
+      'quit-smoking':'Quit smoking completely',
+      diet:          'Switch fully to a Mediterranean diet',
+      stress:        'Reduce stress levels by 50% through mindfulness and lifestyle',
+      water:         'Drink 8 glasses of water every day',
+      steps:         'Walk 10,000 steps every day',
+      all:           'Adopt ALL healthy changes: daily exercise, less sugar, 8h sleep, Mediterranean diet, reduced stress, hydration, and 10k steps'
+    };
+ 
+    const prompt = 'Health profile: score ' + t.healthScore + '/100 (' + t.scoreLabel + '), risks: ' + (t.risks || []).map(r => r.name + ':' + r.pct + '%').join(', ') + ', biological age: ' + t.biologicalAge + '.\nScenario: "' + (scenarios[s] || '') + '".\nReturn ONLY valid JSON, no markdown: {"newScore":<int>,"scoreDelta":<positive int>,"bioAgeDelta":<positive int>,"changes":[{"metric":"<risk name>","before":<int>,"after":<int>}],"timeframe":"<e.g. 4-8 weeks>","insight":"<2-3 warm specific encouraging sentences>","milestones":["<1-2 week result>","<1 month result>","<3 month result>"]}';
+ 
+    try {
+      const raw  = await API.call([{ role: 'user', content: prompt }], 700);
+      const data = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      this._render(box, data, el, s);
+    } catch (e) {
+      console.warn('Simulation API failed, using fallback:', e);
+      this._render(box, Fallback.scenario(t, s), el, s);
+    }
+  },
+ 
+  _render(box, data, el, s) {
+    const t     = S.twin;
+    const icons = { exercise:'🏃', sugar:'🍭', sleep:'😴', 'quit-smoking':'🚭', diet:'🫒', stress:'🧘', water:'💧', steps:'🚶', all:'🌟' };
+    const title = el.querySelector('.wi-title').textContent;
+ 
+    box.innerHTML = `
+      <div class="wi-result">
+        <div class="wir-head">
+          <div class="wir-ico">${icons[s] || '✨'}</div>
+          <div>
+            <div class="wir-title">${title}</div>
+            <div class="wir-sub">Results visible in approximately ${data.timeframe}</div>
+          </div>
+        </div>
+        <div class="wir-cols">
+          <div class="wir-col before">
+            <div class="wir-col-lbl">Current State</div>
+            <div class="wir-stat"><span class="wir-stat-l">Health Score</span><span class="wir-stat-v" style="color:var(--rose)">${t.healthScore}/100</span></div>
+            <div class="wir-stat"><span class="wir-stat-l">Biological Age</span><span class="wir-stat-v" style="color:var(--rose)">${t.biologicalAge} yrs</span></div>
+            ${(data.changes || []).map(c => '<div class="wir-stat"><span class="wir-stat-l">' + c.metric + '</span><span class="wir-stat-v" style="color:var(--rose)">' + c.before + '%</span></div>').join('')}
+          </div>
+          <div class="wir-col after">
+            <div class="wir-col-lbl">After This Change</div>
+            <div class="wir-stat"><span class="wir-stat-l">Health Score</span><span class="wir-stat-v" style="color:var(--grn)">${data.newScore}/100 <small>(+${data.scoreDelta})</small></span></div>
+            <div class="wir-stat"><span class="wir-stat-l">Biological Age</span><span class="wir-stat-v" style="color:var(--grn)">${t.biologicalAge - data.bioAgeDelta} yrs <small>(-${data.bioAgeDelta})</small></span></div>
+            ${(data.changes || []).map(c => '<div class="wir-stat"><span class="wir-stat-l">' + c.metric + '</span><span class="wir-stat-v" style="color:var(--grn)">' + c.after + '%</span></div>').join('')}
+          </div>
+        </div>
+        <div class="wir-insight"><strong>AI Insight:</strong> ${data.insight}</div>
+        ${(data.milestones || []).length ? `
+          <div class="wir-miles">
+            <div class="wm-lbl">🗓 Your Milestones</div>
+            ${(data.milestones || []).map((m, i) => '<div class="wm-row"><span class="wm-n">' + (i + 1) + '.</span>' + m + '</div>').join('')}
+          </div>` : ''}
+      </div>`;
+ 
+    Toast.show('✨ Simulation complete!');
+  }
+};
+ 
+/* ── AI COACH FALLBACK ── */
+const CoachFallback = {
+  replies: {
+    general: [
+      "Great question, friend! 😊 Based on your profile, I'd say the secret is **small, consistent wins** — not overnight transformations. Tiny improvements in sleep, hydration, and daily movement add up big time. Pick just one area to start — what feels easiest for you right now?",
+      "Looking at your numbers, you have real strengths to build on. **Your consistency matters more than perfection.** How about we identify one small win you can aim for this week?",
+      "Great thinking! The science is clear — **sustainable change comes from habit stacking**, not willpower alone. Attach a new health habit to something you already do daily."
+    ],
+    nutrition: [
+      "For your diet type (**{{diet}}**), I'd suggest focusing on **increasing fiber and variety** rather than restriction. Aim for 5-7 servings of colorful vegetables daily. This alone can significantly improve your metabolic markers.",
+      "Nutrition is deeply personal, but the universal principle is: **whole foods over processed.** Based on your profile, adding more omega-3s (fatty fish, walnuts, flax) and reducing refined carbs would have the biggest impact.",
+      "Your current diet is **{{diet}}**. A practical next step: swap one processed snack per day for a whole-food alternative. This small shift creates momentum without feeling overwhelming."
+    ],
+    fitness: [
+      "You're currently doing **{{exercise}} minutes** of exercise per day. Great that you're moving! To level up, consider **adding 2-3 strength sessions per week** — resistance training is the single most effective exercise for longevity and metabolic health.",
+      "Movement consistency beats intensity. If daily walks are your foundation, keep them! Then **layer on 15 minutes of bodyweight exercises** (squats, push-ups, planks) 3x per week for a powerful boost.",
+      "Your step count of **{{steps}}/day** is a solid baseline. Aim to gradually increase by 500 steps each week. Add **intervals** (30s fast pace, 90s recovery) to your walks for extra cardiovascular benefit."
+    ],
+    mental: [
+      "With stress at **{{stress}}/10**, your nervous system deserves some intentional care. **Box breathing** (4-4-4-4) for 2 minutes, 3 times daily is a clinically proven way to down-regulate stress. Try it before meals.",
+      "Mental wellness is foundational — it affects sleep, digestion, metabolism, and heart health. Based on your profile, **10 minutes of morning mindfulness** would give you the highest ROI for your overall wellbeing.",
+      "Your sleep of **{{sleep}}h** and stress at **{{stress}}/10** are linked. Improving one helps the other. Start with a **wind-down routine**: no screens 30 min before bed, a warm herbal tea, and 5 min of journaling."
+    ],
+    sleep: [
+      "Sleep is the ultimate performance-enhancing habit. You're averaging **{{sleep}} hours**. The biggest lever? **Consistent wake time** — even on weekends. This anchors your circadian rhythm more effectively than an early bedtime.",
+      "To improve sleep quality, focus on **three things**: darkness (blackout curtains), cool temperature (65-68°F / 18-20°C), and no caffeine after 2 PM. Your body will thank you.",
+      "Your sleep of **{{sleep}}h** is {{sleepCmp}}. Consider **progressive relaxation** before bed: tense each muscle group for 5 seconds, then release. This signals your body that it's safe to rest."
+    ]
+  },
+  reply(msg, mode, profile, twin) {
+    const m = this.replies[mode] || this.replies.general;
+    const idx = Math.abs(this._hash(msg)) % m.length;
+    let text = m[idx]
+      .replace('{{diet}}', profile?.diet || 'balanced')
+      .replace('{{exercise}}', profile?.exercise || '30')
+      .replace('{{steps}}', profile?.steps || '5000')
+      .replace('{{stress}}', profile?.stress || '5')
+      .replace('{{sleep}}', profile?.sleep || '7')
+      .replace('{{sleepCmp}}', (profile?.sleep || 7) >= 7 ? 'meeting the recommended range' : 'below the optimal 7-9 hours');
+    const name = twin?.risks?.slice().sort((a, b) => b.pct - a.pct)?.[0]?.name;
+    if (name) text += `\n\nBased on your profile, your top health area to monitor is **${name}**. Even small, consistent improvements here create a meaningful shift in your overall outlook.`;
+    text += `\n\n✨ *Every positive step you take builds into a healthier tomorrow.*`;
+    return text;
+  },
+  _hash(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+    return h;
+  }
+};
+
+/* ── AI COACH ── */
+const Coach = {
+  _mode: 'general',
+ 
+  setMode(m, el) {
+    this._mode = m;
+    document.querySelectorAll('.cmode').forEach(b => b.classList.remove('on'));
+    el.classList.add('on');
+    Toast.show('Switched to ' + m.charAt(0).toUpperCase() + m.slice(1) + ' mode');
+  },
+ 
+  ask(q) {
+    const ta = document.getElementById('chat-ta');
+    if (ta) ta.value = q;
+    Nav.go('coach', document.querySelector('[data-p=coach]'));
+    setTimeout(() => this.send(), 200);
+  },
+ 
+  clear() {
+    document.getElementById('chat-msgs').innerHTML = `
+      <div class="msg ai">
+        <div class="msg-av">🤖</div>
+        <div class="msg-wrap">
+          <div class="msg-bubble">Chat cleared! 👋 Ready for your next question.</div>
+          <div class="msg-time">Just now</div>
+        </div>
+      </div>`;
+    S.chatHistory = [];
+    Toast.show('💬 Chat cleared');
+  },
+ 
+  async send() {
+    const ta  = document.getElementById('chat-ta');
+    const msg = ta?.value.trim();
+    if (!msg) return;
+ 
+    ta.value = '';
+    ta.style.height = 'auto';
+ 
+    this._addMsg('user', msg);
+ 
+    const sendBtn = document.getElementById('chat-send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+ 
+    const tid = 'msg-' + Date.now();
+    this._addMsg('ai', '<div class="typing"><div class="ty"></div><div class="ty"></div><div class="ty"></div></div>', tid);
+ 
+    const p = S.profile || {};
+    const t = S.twin    || {};
+ 
+    const modeCtx = {
+      general:   'You are a warm, friendly health and wellness advisor.',
+      nutrition: 'You are a warm, friendly nutrition advisor. Focus on food, diet, and meal planning.',
+      fitness:   'You are an encouraging, friendly fitness coach. Focus on workouts and exercise.',
+      mental:    'You are a compassionate, friendly mental wellness coach. Focus on stress and emotional health.',
+      sleep:     'You are a gentle, friendly sleep coach. Focus on sleep quality and routines.'
+    };
+ 
+    const baseMode = modeCtx[this._mode] || modeCtx.general;
+    const sysMsg = baseMode + '\n\nYou have the user\'s complete health profile:\n- Age: ' + p.age + ', Sex: ' + p.sex + '\n- BMI: ' + (t.bmi || '?') + ' (' + (t.bmiCategory || '?') + ')\n- Health Score: ' + (t.healthScore || '?') + '/100 (' + (t.scoreLabel || '?') + ')\n- Biological Age: ' + (t.biologicalAge || '?') + ' (calendar: ' + p.age + ')\n- Cardiovascular Age: ' + (t.cardiovascularAge || '?') + '\n- Metabolic Health: ' + (t.metabolicScore || '?') + '\n- Sleep: ' + p.sleep + 'h/night | Exercise: ' + p.exercise + 'min/day\n- Diet: ' + p.diet + ' | Stress: ' + p.stress + '/10\n- Water: ' + p.water + 'gl/day | Alcohol: ' + p.alcohol + '/week\n- Steps: ' + p.steps + '/day | Smoking: ' + p.smoking + '\n- Family history: ' + p.family + '\n- Goals: ' + (p.goals || []).join(', ') + '\n- Top risks: ' + (t.risks || []).slice().sort((a, b) => b.pct - a.pct).slice(0, 3).map(r => r.name + ' (' + r.pct + '%)').join(', ') + '\n\nInstructions:\n- Be super friendly, warm, and conversational — like a supportive best friend who also happens to be a health expert\n- Reference their actual numbers when relevant to make advice personal\n- Celebrate their wins and strengths enthusiastically\n- Use **bold** for key points and occasional emojis to keep it light\n- Keep responses warm and natural — never stiff or robotic\n- Never prescribe medications or diagnose conditions\n- End with an encouraging, uplifting note';
+
+    S.chatHistory.push({ role: 'user', content: msg });
+
+    let reply;
+    for (let retry = 0; retry < 2; retry++) {
+      if (retry > 0) {
+        const el = document.getElementById(tid);
+        if (el) el.querySelector('.msg-bubble').innerHTML = '<div class="typing"><div class="ty"></div><div class="ty"></div><div class="ty"></div></div>';
+        await new Promise(r => setTimeout(r, 1500 * retry));
+      }
+      try {
+        reply = await API.call(S.chatHistory, 950, sysMsg);
+        break;
+      } catch (err) {
+        console.warn('Coach API attempt ' + (retry + 1) + ' failed:', err);
+        reply = null;
+      }
+    }
+    if (!reply) {
+      reply = CoachFallback.reply(msg, this._mode, S.profile, S.twin);
+    }
+    S.chatHistory.push({ role: 'assistant', content: reply });
+    const el = document.getElementById(tid);
+    if (el) {
+      const formatted = reply
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n\n/g, '<br/><br/>')
+        .replace(/\n/g, '<br/>');
+      el.querySelector('.msg-bubble').innerHTML = formatted;
+      const timeEl = document.createElement('div');
+      timeEl.className = 'msg-time';
+      timeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      el.querySelector('.msg-wrap').appendChild(timeEl);
+    }
+ 
+    if (sendBtn) sendBtn.disabled = false;
+    this._scroll();
+  },
+ 
+  _addMsg(role, html, id) {
+    const msgs = document.getElementById('chat-msgs');
+    if (!msgs) return;
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    if (id) div.id = id;
+    const icon = role === 'ai' ? '🤖' : '👤';
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    div.innerHTML = '\n      <div class="msg-av">' + icon + '</div>\n      <div class="msg-wrap">\n        <div class="msg-bubble">' + html + '</div>\n        ' + (id ? '' : '<div class="msg-time">' + time + '</div>') + '\n      </div>';
+    msgs.appendChild(div);
+    this._scroll();
+  },
+ 
+  _scroll() {
+    const msgs = document.getElementById('chat-msgs');
+    if (msgs) setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; }, 60);
+  }
+};
+ 
+/* ── APP ── */
+const App = {
+  toWelcome() {
+    if (confirm('Go back to the welcome screen?')) {
+      document.getElementById('app').classList.remove('show');
+      document.getElementById('welcome').style.display = '';
+    }
+  },
+  reset() {
+    if (!confirm('Reset everything and start over?')) return;
+    Object.assign(S, { twin: null, profile: null, chatHistory: [], chatMode: 'general', diet: 'balanced', goals: ['lose-weight'] });
+    document.getElementById('app').classList.remove('show');
+    document.getElementById('setup').classList.remove('show');
+    document.getElementById('welcome').style.display = '';
+    const cm = document.getElementById('chat-msgs');
+    if (cm) cm.innerHTML = `
+      <div class="msg ai">
+        <div class="msg-av">🤖</div>
+        <div class="msg-wrap">
+          <div class="msg-bubble">I'm your <strong>MediTwin AI Health Coach</strong> — ask me anything about nutrition, fitness, sleep, stress, or living better.</div>
+          <div class="msg-time">Just now</div>
+        </div>
+      </div>`;
+    Toast.show('↺ Reset — welcome back!');
+  }
+};
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+const container = document.getElementById('canvas-container');
+if (container) {
+  const scene = new THREE.Scene();
+  const sceneGroup = new THREE.Group();
+  sceneGroup.position.x = 25;
+  scene.add(sceneGroup);
+
+  /* ── Sizing relative to container ── */
+  const w = () => container.clientWidth || window.innerWidth * 0.55;
+  const h = () => container.clientHeight || window.innerHeight;
+
+  const camera = new THREE.PerspectiveCamera(45, w() / h(), 0.1, 1000);
+  camera.position.set(14, 0, 28);
+  camera.lookAt(25, -3, 0);
+
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setSize(w(), h());
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+  container.appendChild(renderer.domElement);
+
+  /* ── Lights ── */
+  scene.add(new THREE.AmbientLight(0x406080, 0.4));
+  const dl1 = new THREE.DirectionalLight(0x88bbdd, 1.8);
+  dl1.position.set(10, 20, 10);
+  scene.add(dl1);
+  const dl2 = new THREE.DirectionalLight(0x52a882, 0.8);
+  dl2.position.set(-10, -5, 10);
+  scene.add(dl2);
+
+  /* ── DNA Helix ── */
+  const dnaGroup = new THREE.Group();
+  const spheres = [];
+  const pairs = 22, radius = 2.8, height = 12;
+  const sphereGeo = new THREE.SphereGeometry(0.45, 20, 20);
+
+  for (let i = 0; i < pairs; i++) {
+    const t = i / pairs, y = (t - 0.5) * height, angle = t * Math.PI * 6;
+    const mkSph = (hue, xOff) => {
+      const s = new THREE.Mesh(sphereGeo, new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color().setHSL(hue, 0.7, 0.55),
+        metalness: 0.15, roughness: 0.25,
+        emissive: new THREE.Color().setHSL(hue, 0.5, 0.08),
+      }));
+      s.position.set(Math.cos(angle + xOff) * radius, y, Math.sin(angle + xOff) * radius);
+      dnaGroup.add(s);
+      spheres.push(s);
+    };
+    mkSph(0.38 - t * 0.15, 0);
+    mkSph(0.58 + t * 0.12, Math.PI);
+
+    const pts = [
+      new THREE.Vector3(Math.cos(angle) * radius, y, Math.sin(angle) * radius),
+      new THREE.Vector3(Math.cos(angle + Math.PI) * radius, y, Math.sin(angle + Math.PI) * radius),
+    ];
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 8, 0.06, 4, false),
+      new THREE.MeshPhysicalMaterial({ color: new THREE.Color().setHSL(0.48, 0.4, 0.6), transparent: true, opacity: 0.4, metalness: 0.1, roughness: 0.3 }),
+    );
+    dnaGroup.add(tube);
+  }
+
+  for (const offset of [0, Math.PI]) {
+    const pts = [];
+    for (let i = 0; i <= 60; i++) {
+      const t = i / 60, angle = t * Math.PI * 6 + offset;
+      pts.push(new THREE.Vector3(Math.cos(angle) * radius, (t - 0.5) * height, Math.sin(angle) * radius));
+    }
+    dnaGroup.add(new THREE.Mesh(
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 60, 0.08, 4, false),
+      new THREE.MeshPhysicalMaterial({
+        color: offset === 0 ? 0x52a882 : 0x4a90d9,
+        emissive: offset === 0 ? 0x1a5a3a : 0x1a4070,
+        emissiveIntensity: 0.25, transparent: true, opacity: 0.55,
+        metalness: 0.2, roughness: 0.2,
+      }),
+    ));
+  }
+  dnaGroup.position.set(0, -2, 0);
+  sceneGroup.add(dnaGroup);
+
+  /* ── Particles ── */
+  const pCount = 1200;
+  const pPos = new Float32Array(pCount * 3);
+  const pPhase = new Float32Array(pCount);
+  for (let i = 0; i < pCount; i++) {
+    const theta = Math.random() * Math.PI * 2, phi = Math.acos(2 * Math.random() - 1), r = 14 + Math.random() * 30;
+    pPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    pPos[i * 3 + 1] = (Math.random() - 0.5) * 45;
+    pPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+    pPhase[i] = Math.random() * Math.PI * 2;
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+  pGeo.setAttribute('phase', new THREE.BufferAttribute(pPhase, 1));
+  const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
+    color: 0x6a9ac8, size: 0.09, transparent: true, opacity: 0.25,
+    blending: THREE.AdditiveBlending, sizeAttenuation: true,
+  }));
+  sceneGroup.add(particles);
+
+  /* ── Medical crosses ── */
+  const crossGroup = new THREE.Group();
+  const cMat = new THREE.MeshPhysicalMaterial({ color: 0x52a882, transparent: true, opacity: 0.12, emissive: 0x52a882, emissiveIntensity: 0.06 });
+  for (let i = 0; i < 40; i++) {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.4, 0.04), cMat));
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.04), cMat));
+    const theta = Math.random() * Math.PI * 2, phi = Math.acos(2 * Math.random() - 1), r = 10 + Math.random() * 20;
+    g.position.set(r * Math.sin(phi) * Math.cos(theta), (Math.random() - 0.5) * 30, r * Math.sin(phi) * Math.sin(theta));
+    g.rotation.set(Math.random() * 2, Math.random() * 2, Math.random() * 2);
+    g.userData = { rotSpeed: 0.2 + Math.random() * 0.5, phase: Math.random() * 6 };
+    crossGroup.add(g);
+  }
+  sceneGroup.add(crossGroup);
+
+  /* ── Mouse ── */
+  let mx = 0, my = 0;
+  document.addEventListener('mousemove', (e) => {
+    mx = (e.clientX / window.innerWidth - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  /* ── Resize ── */
+  window.addEventListener('resize', () => {
+    const nw = w(), nh = h();
+    camera.aspect = nw / nh;
+    camera.updateProjectionMatrix();
+    renderer.setSize(nw, nh);
+  });
+
+  /* ── Animation ── */
+  const clock = new THREE.Clock();
+  const isVisible = () => container.offsetParent !== null;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isVisible()) return;
+
+    const t = clock.getElapsedTime();
+
+    dnaGroup.rotation.y = t * 0.18 + mx * 0.25;
+    dnaGroup.rotation.x = Math.sin(t * 0.08) * 0.06 + my * 0.1;
+
+    spheres.forEach((s, i) => {
+      const p = 1 + Math.sin(t * 1.5 + i * 0.7) * 0.08;
+      s.scale.set(p, p, p);
+    });
+
+    const pos = particles.geometry.attributes.position.array;
+    for (let i = 0; i < pCount; i++) {
+      pos[i * 3 + 1] += Math.sin(t * 0.1 + pPhase[i]) * 0.003;
+      if (pos[i * 3 + 1] > 22) pos[i * 3 + 1] = -22;
+      if (pos[i * 3 + 1] < -22) pos[i * 3 + 1] = 22;
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+
+    crossGroup.children.forEach((g) => {
+      g.rotation.x += 0.003 * g.userData.rotSpeed;
+      g.rotation.y += 0.005 * g.userData.rotSpeed;
+      g.position.y += Math.sin(t * 0.2 + g.userData.phase) * 0.004;
+    });
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+}
+</script>
+</body>
+</html>

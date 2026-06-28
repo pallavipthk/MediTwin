@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-sage-400: #4fa880;
+  --color-sage-500: #3d8a6a;
+  --color-sky-400: #4a8fd9;
+  --color-sky-500: #3570b0;
+}
+
+:root {
+  --bg-body: #f8fafc;
+  --bg-nav: rgba(248, 250, 252, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-card-solid: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-inset: #f1f5f9;
+  --border-card: rgba(0, 0, 0, 0.07);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.08);
+  --orb-white: rgba(255, 255, 255, 0.9);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  --shadow-elevated: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.dark {
+  --bg-body: #080c16;
+  --bg-nav: rgba(8, 12, 22, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-solid: rgba(255, 255, 255, 0.04);
+  --bg-elevated: rgba(255, 255, 255, 0.02);
+  --bg-inset: rgba(0, 0, 0, 0.2);
+  --border-card: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.03);
+  --text-primary: #e8edf5;
+  --text-secondary: #8896ab;
+  --text-muted: #556278;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.08);
+  --orb-white: rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-elevated: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-body);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: rgba(79, 168, 128, 0.2);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
